@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=obe_portal_db
+      - POSTGRES_USER=obe_user
+      - POSTGRES_PASSWORD=obe_password
+    ports:
+      - "5432:5432"
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - SECRET_KEY=your_secret_key_for_development_only_change_in_production
+      - DJANGO_SETTINGS_MODULE=obe_portal.settings
+      - DB_NAME=obe_portal_db
+      - DB_USER=obe_user
+      - DB_PASSWORD=obe_password
+      - DB_HOST=db
+      - DB_PORT=5432
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

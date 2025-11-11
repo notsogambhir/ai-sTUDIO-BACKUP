@@ -1,0 +1,184 @@
+{
+  "settings": {
+    "defaultCoTarget": 50,
+    "defaultAttainmentLevels": { "level3": 80, "level2": 70, "level1": 50 },
+    "defaultWeights": { "direct": 90, "indirect": 10 }
+  },
+  "users": [
+    { "id": "U_ADMIN", "employeeId": "ADM001", "username": "admin", "password": "password", "role": "Admin", "name": "Admin User" },
+    { "id": "U_UNIV", "employeeId": "UNV001", "username": "university", "password": "password", "role": "University", "name": "Dean Adams" },
+    { "id": "DEPT_CUIET", "employeeId": "DPT001", "username": "dept_cuiet", "password": "password", "role": "Department", "name": "Dr. Head CUIET", "collegeId": "CUIET" },
+    { "id": "DEPT_CCP", "employeeId": "DPT002", "username": "dept_ccp", "password": "password", "role": "Department", "name": "Dr. Head CCP", "collegeId": "CCP" },
+    { "id": "DEPT_CBS", "employeeId": "DPT003", "username": "dept_cbs", "password": "password", "role": "Department", "name": "Dr. Head CBS", "collegeId": "CBS" },
+    { "id": "PC_ME", "employeeId": "PC011", "username": "pc_me", "password": "password", "role": "Program Co-ordinator", "name": "Mr. Mehra", "programId": "P1", "departmentId": "DEPT_CUIET" },
+    { "id": "T_ME_1", "employeeId": "TCH201", "username": "teacher_me1", "password": "password", "role": "Teacher", "name": "Prof. Anjali", "programCoordinatorIds": ["PC_ME"], "status": "Active" },
+    { "id": "T_ME_2", "employeeId": "TCH202", "username": "teacher_me2", "password": "password", "role": "Teacher", "name": "Dr. Singh", "programCoordinatorIds": ["PC_ME"], "status": "Active" },
+    { "id": "T_ME_3", "employeeId": "TCH203", "username": "teacher_me3", "password": "password", "role": "Teacher", "name": "Ms. Gupta", "programCoordinatorIds": ["PC_ME"], "status": "Active" },
+    { "id": "PC_ECE", "employeeId": "PC012", "username": "pc_ece", "password": "password", "role": "Program Co-ordinator", "name": "Ms. Jones", "programId": "P2", "departmentId": "DEPT_CUIET" },
+    { "id": "T_ECE_1", "employeeId": "TCH301", "username": "teacher_ece1", "password": "password", "role": "Teacher", "name": "Dr. Smith", "programCoordinatorIds": ["PC_ECE"], "status": "Active" },
+    { "id": "T_ECE_2", "employeeId": "TCH302", "username": "teacher_ece2", "password": "password", "role": "Teacher", "name": "Prof. Davis", "programCoordinatorIds": ["PC_ECE"], "status": "Active" },
+    { "id": "T_ECE_3", "employeeId": "TCH303", "username": "teacher_ece3", "password": "password", "role": "Teacher", "name": "Mr. Wilson", "programCoordinatorIds": ["PC_ECE", "PC_ME"], "status": "Active" },
+    { "id": "PC_BPHARMA", "employeeId": "PC021", "username": "pc_bpharma", "password": "password", "role": "Program Co-ordinator", "name": "Dr. Patel", "programId": "P3", "departmentId": "DEPT_CCP" },
+    { "id": "T_BPHARMA_1", "employeeId": "TCH401", "username": "teacher_bpharma1", "password": "password", "role": "Teacher", "name": "Ms. Chen", "programCoordinatorIds": ["PC_BPHARMA"], "status": "Active" },
+    { "id": "PC_BBA", "employeeId": "PC031", "username": "pc_bba", "password": "password", "role": "Program Co-ordinator", "name": "Mr. Carter", "programId": "P5", "departmentId": "DEPT_CBS" },
+    { "id": "T_BBA_1", "employeeId": "TCH601", "username": "teacher_bba1", "password": "password", "role": "Teacher", "name": "Mrs. Lee", "programCoordinatorIds": ["PC_BBA"], "status": "Active" }
+  ],
+  "colleges": [
+    { "id": "CUIET", "name": "CUIET" },
+    { "id": "CCP", "name": "CCP" },
+    { "id": "CBS", "name": "CBS" }
+  ],
+  "programs": [
+    { "id": "P1", "name": "BE ME", "collegeId": "CUIET", "duration": 4 },
+    { "id": "P2", "name": "BE ECE", "collegeId": "CUIET", "duration": 4 },
+    { "id": "P3", "name": "B. Pharma", "collegeId": "CCP", "duration": 4 },
+    { "id": "P4", "name": "M. Pharma", "collegeId": "CCP", "duration": 2 },
+    { "id": "P5", "name": "BBA", "collegeId": "CBS", "duration": 3 },
+    { "id": "P6", "name": "MBA Global", "collegeId": "CBS", "duration": 2 }
+  ],
+  "batches": [
+    { "id": "B_P1_2025", "programId": "P1", "name": "2025-2029" },
+    { "id": "B_P2_2025", "programId": "P2", "name": "2025-2029" },
+    { "id": "B_P2_2024", "programId": "P2", "name": "2024-2028" },
+    { "id": "B_P2_2023", "programId": "P2", "name": "2023-2027" },
+    { "id": "B_P3_2025", "programId": "P3", "name": "2025-2029" },
+    { "id": "B_P5_2025", "programId": "P5", "name": "2025-2028" }
+  ],
+  "courses": [
+    { "id": "C101", "name": "Introduction to Programming", "code": "CS101", "programId": "P2", "status": "Completed", "teacherId": "T_ECE_1", "target": 50, "internalWeightage": 25, "externalWeightage": 75, "attainmentLevels": { "level3": 80, "level2": 70, "level1": 50 } },
+    { "id": "C102", "name": "Database Management Systems", "code": "CS203", "programId": "P2", "status": "Active", "teacherId": "T_ECE_1", "target": 50, "internalWeightage": 25, "externalWeightage": 75, "attainmentLevels": { "level3": 80, "level2": 70, "level1": 50 }, "sectionTeacherIds": { "SEC_A_P2_2025": "T_ECE_1", "SEC_B_P2_2025": "T_ECE_2" } },
+    { "id": "C103", "name": "Network Theory", "code": "EC201", "programId": "P2", "status": "Completed", "teacherId": "T_ECE_2", "target": 50, "internalWeightage": 25, "externalWeightage": 75, "attainmentLevels": { "level3": 80, "level2": 70, "level1": 50 } },
+    { "id": "C201", "name": "Digital Logic Design", "code": "EC202", "programId": "P2", "status": "Active", "teacherId": "T_ECE_2", "target": 50, "internalWeightage": 25, "externalWeightage": 75, "attainmentLevels": { "level3": 80, "level2": 70, "level1": 50 } },
+    { "id": "C202", "name": "Signals and Systems", "code": "EC204", "programId": "P2", "status": "Active", "teacherId": "T_ECE_2", "target": 50, "internalWeightage": 25, "externalWeightage": 75, "attainmentLevels": { "level3": 80, "level2": 70, "level1": 50 } },
+    { "id": "C301", "name": "Microprocessors", "code": "EC301", "programId": "P2", "status": "Active", "teacherId": "T_ECE_3", "target": 50, "internalWeightage": 25, "externalWeightage": 75, "attainmentLevels": { "level3": 80, "level2": 70, "level1": 50 } },
+    { "id": "C302", "name": "Communication Systems", "code": "EC305", "programId": "P2", "status": "Active", "teacherId": "T_ECE_3", "target": 50, "internalWeightage": 25, "externalWeightage": 75, "attainmentLevels": { "level3": 80, "level2": 70, "level1": 50 } },
+    { "id": "C401", "name": "VLSI Design", "code": "EC401", "programId": "P2", "status": "Future", "teacherId": null, "target": 50, "internalWeightage": 25, "externalWeightage": 75, "attainmentLevels": { "level3": 80, "level2": 70, "level1": 50 } },
+    { "id": "C402", "name": "Embedded Systems", "code": "EC405", "programId": "P2", "status": "Future", "teacherId": null, "target": 50, "internalWeightage": 25, "externalWeightage": 75, "attainmentLevels": { "level3": 80, "level2": 70, "level1": 50 } },
+    { "id": "C_ME_1", "name": "Engineering Mechanics", "code": "ME101", "programId": "P1", "status": "Active", "teacherId": "T_ME_1", "target": 50, "internalWeightage": 25, "externalWeightage": 75, "attainmentLevels": { "level3": 80, "level2": 70, "level1": 50 } },
+    { "id": "C_ME_2", "name": "Thermodynamics", "code": "ME201", "programId": "P1", "status": "Active", "teacherId": "T_ME_2", "target": 50, "internalWeightage": 25, "externalWeightage": 75, "attainmentLevels": { "level3": 80, "level2": 70, "level1": 50 } },
+    { "id": "C_PH_1", "name": "Pharmaceutical Chemistry", "code": "PC101", "programId": "P3", "status": "Active", "teacherId": "T_BPHARMA_1", "target": 60, "internalWeightage": 30, "externalWeightage": 70, "attainmentLevels": { "level3": 85, "level2": 75, "level1": 60 } }
+  ],
+  "sections": [
+    { "id": "SEC_A_P2_2025", "name": "A", "programId": "P2", "batchId": "B_P2_2025" },
+    { "id": "SEC_B_P2_2025", "name": "B", "programId": "P2", "batchId": "B_P2_2025" },
+    { "id": "SEC_A_P2_2024", "name": "A", "programId": "P2", "batchId": "B_P2_2024" },
+    { "id": "SEC_A_P1_2025", "name": "A", "programId": "P1", "batchId": "B_P1_2025" },
+    { "id": "SEC_A_P3_2025", "name": "A", "programId": "P3", "batchId": "B_P3_2025" }
+  ],
+   "students": [
+    {"id":"25ECE1001","name":"Alice Johnson","programId":"P2","status":"Active","sectionId":"SEC_A_P2_2025"},
+    {"id":"25ECE1002","name":"Bob Williams","programId":"P2","status":"Active","sectionId":"SEC_A_P2_2025"},
+    {"id":"25ECE1003","name":"Charlie Brown","programId":"P2","status":"Active","sectionId":"SEC_A_P2_2025"},
+    {"id":"25ECE1004","name":"Diana Miller","programId":"P2","status":"Inactive","sectionId":"SEC_A_P2_2025"},
+    {"id":"25ECE1005","name":"Ethan Davis","programId":"P2","status":"Active","sectionId":"SEC_A_P2_2025"},
+    {"id":"25ECE2001","name":"Fiona Garcia","programId":"P2","status":"Active","sectionId":"SEC_B_P2_2025"},
+    {"id":"25ECE2002","name":"George Rodriguez","programId":"P2","status":"Active","sectionId":"SEC_B_P2_2025"},
+    {"id":"25ECE2003","name":"Hannah Wilson","programId":"P2","status":"Active","sectionId":"SEC_B_P2_2025"},
+    {"id":"25ECE2004","name":"Ian Martinez","programId":"P2","status":"Active","sectionId":"SEC_B_P2_2025"},
+    {"id":"25ECE2005","name":"Jane Anderson","programId":"P2","status":"Active","sectionId":"SEC_B_P2_2025"},
+    {"id":"24ECE1001","name":"Kevin Taylor","programId":"P2","status":"Active","sectionId":"SEC_A_P2_2024"},
+    {"id":"24ECE1002","name":"Liam Thomas","programId":"P2","status":"Active","sectionId":"SEC_A_P2_2024"},
+    {"id":"24ECE1003","name":"Mona Hernandez","programId":"P2","status":"Active","sectionId":"SEC_A_P2_2024"},
+    {"id":"24ECE1004","name":"Nina Moore","programId":"P2","status":"Inactive","sectionId":"SEC_A_P2_2024"},
+    {"id":"24ECE1005","name":"Oscar Martin","programId":"P2","status":"Active","sectionId":"SEC_A_P2_2024"},
+    {"id":"25ME1001","name":"Paul Jackson","programId":"P1","status":"Active","sectionId":"SEC_A_P1_2025"},
+    {"id":"25ME1002","name":"Quincy Thompson","programId":"P1","status":"Active","sectionId":"SEC_A_P1_2025"},
+    {"id":"25ME1003","name":"Rachel White","programId":"P1","status":"Active","sectionId":"SEC_A_P1_2025"},
+    {"id":"25PH1001","name":"Sam Harris","programId":"P3","status":"Active","sectionId":"SEC_A_P3_2025"},
+    {"id":"25PH1002","name":"Tina Clark","programId":"P3","status":"Active","sectionId":"SEC_A_P3_2025"},
+    {"id":"25PH1003","name":"Uma Lewis","programId":"P3","status":"Active", "sectionId": null},
+    {"id":"25PH1004","name":"Victor Robinson","programId":"P3","status":"Active", "sectionId": null}
+  ],
+  "enrollments": [
+    {"courseId":"C102","studentId":"25ECE1001","sectionId":"SEC_A_P2_2025"},
+    {"courseId":"C201","studentId":"25ECE1001","sectionId":"SEC_A_P2_2025"},
+    {"courseId":"C202","studentId":"25ECE1001","sectionId":"SEC_A_P2_2025"},
+    {"courseId":"C102","studentId":"25ECE1002","sectionId":"SEC_A_P2_2025"},
+    {"courseId":"C201","studentId":"25ECE1002","sectionId":"SEC_A_P2_2025"},
+    {"courseId":"C202","studentId":"25ECE1002","sectionId":"SEC_A_P2_2025"},
+    {"courseId":"C102","studentId":"25ECE1003","sectionId":"SEC_A_P2_2025"},
+    {"courseId":"C201","studentId":"25ECE1003","sectionId":"SEC_A_P2_2025"},
+    {"courseId":"C202","studentId":"25ECE1003","sectionId":"SEC_A_P2_2025"},
+    {"courseId":"C102","studentId":"25ECE1004","sectionId":"SEC_A_P2_2025"},
+    {"courseId":"C201","studentId":"25ECE1004","sectionId":"SEC_A_P2_2025"},
+    {"courseId":"C102","studentId":"25ECE1005","sectionId":"SEC_A_P2_2025"},
+    {"courseId":"C201","studentId":"25ECE1005","sectionId":"SEC_A_P2_2025"},
+    {"courseId":"C102","studentId":"25ECE2001","sectionId":"SEC_B_P2_2025"},
+    {"courseId":"C301","studentId":"25ECE2001","sectionId":"SEC_B_P2_2025"},
+    {"courseId":"C302","studentId":"25ECE2001","sectionId":"SEC_B_P2_2025"},
+    {"courseId":"C102","studentId":"25ECE2002","sectionId":"SEC_B_P2_2025"},
+    {"courseId":"C301","studentId":"25ECE2002","sectionId":"SEC_B_P2_2025"},
+    {"courseId":"C302","studentId":"25ECE2002","sectionId":"SEC_B_P2_2025"},
+    {"courseId":"C102","studentId":"25ECE2003","sectionId":"SEC_B_P2_2025"},
+    {"courseId":"C301","studentId":"25ECE2003","sectionId":"SEC_B_P2_2025"},
+    {"courseId":"C_ME_1","studentId":"25ME1001","sectionId":"SEC_A_P1_2025"},
+    {"courseId":"C_ME_2","studentId":"25ME1001","sectionId":"SEC_A_P1_2025"},
+    {"courseId":"C_ME_1","studentId":"25ME1002","sectionId":"SEC_A_P1_2025"},
+    {"courseId":"C_ME_2","studentId":"25ME1002","sectionId":"SEC_A_P1_2025"},
+    {"courseId":"C_ME_1","studentId":"25ME1003","sectionId":"SEC_A_P1_2025"},
+    {"courseId":"C_PH_1","studentId":"25PH1001","sectionId":"SEC_A_P3_2025"},
+    {"courseId":"C_PH_1","studentId":"25PH1002","sectionId":"SEC_A_P3_2025"}
+  ],
+  "courseOutcomes": [
+    { "id": "CO_C102_1", "courseId": "C102", "number": "CO1", "description": "Understand database concepts and structures." },
+    { "id": "CO_C102_2", "courseId": "C102", "number": "CO2", "description": "Design and implement a relational database." },
+    { "id": "CO_C102_3", "courseId": "C102", "number": "CO3", "description": "Formulate queries using SQL." },
+    { "id": "CO_C201_1", "courseId": "C201", "number": "CO1", "description": "Understand number systems and logic gates." },
+    { "id": "CO_C201_2", "courseId": "C201", "number": "CO2", "description": "Design combinational and sequential logic circuits." },
+    { "id": "CO_ME1_1", "courseId": "C_ME_1", "number": "CO1", "description": "Apply principles of statics to analyze rigid bodies." },
+    { "id": "CO_ME1_2", "courseId": "C_ME_1", "number": "CO2", "description": "Analyze forces in structures like trusses and frames." }
+  ],
+  "programOutcomes": [
+    { "id": "PO_P1_1", "programId": "P1", "number": "PO1", "description": "Engineering knowledge for ME." },
+    { "id": "PO_P1_2", "programId": "P1", "number": "PO2", "description": "Problem analysis for ME." },
+    { "id": "PO_P2_1", "programId": "P2", "number": "PO1", "description": "Engineering knowledge" },
+    { "id": "PO_P2_2", "programId": "P2", "number": "PO2", "description": "Problem analysis" },
+    { "id": "PO_P2_3", "programId": "P2", "number": "PO3", "description": "Design/development of solutions" },
+    { "id": "PO_P2_4", "programId": "P2", "number": "PO4", "description": "Conduct investigations of complex problems" },
+    { "id": "PO_P3_1", "programId": "P3", "number": "PO1", "description": "Pharmacy Knowledge" }
+  ],
+  "coPoMapping": [
+    { "courseId": "C102", "coId": "CO_C102_1", "poId": "PO_P2_1", "level": 3 },
+    { "courseId": "C102", "coId": "CO_C102_2", "poId": "PO_P2_2", "level": 2 },
+    { "courseId": "C102", "coId": "CO_C102_3", "poId": "PO_P2_3", "level": 3 },
+    { "courseId": "C201", "coId": "CO_C201_1", "poId": "PO_P2_1", "level": 3 },
+    { "courseId": "C201", "coId": "CO_C201_2", "poId": "PO_P2_3", "level": 3 },
+    { "courseId": "C_ME_1", "coId": "CO_ME1_1", "poId": "PO_P1_1", "level": 3 },
+    { "courseId": "C_ME_1", "coId": "CO_ME1_1", "poId": "PO_P1_2", "level": 2 },
+    { "courseId": "C_ME_1", "coId": "CO_ME1_2", "poId": "PO_P1_2", "level": 3 }
+  ],
+  "assessments": [
+    { "id": "A_C102_1", "sectionId": "SEC_A_P2_2025", "name": "Sessional Test 1 (DBMS)", "type": "Internal", "questions": [
+        { "q": "Q1", "coIds": ["CO_C102_1"], "maxMarks": 10 },
+        { "q": "Q2", "coIds": ["CO_C102_2"], "maxMarks": 15 }
+    ]},
+    { "id": "A_C102_2", "sectionId": "SEC_B_P2_2025", "name": "Final Exam (DBMS)", "type": "External", "questions": [
+        { "q": "Q1", "coIds": ["CO_C102_1", "CO_C102_2"], "maxMarks": 20 },
+        { "q": "Q2", "coIds": ["CO_C102_3"], "maxMarks": 25 }
+    ]},
+    { "id": "A_C201_1", "sectionId": "SEC_A_P2_2025", "name": "Sessional Test 1 (DLD)", "type": "Internal", "questions": [
+        { "q": "Q1", "coIds": ["CO_C201_1"], "maxMarks": 10 },
+        { "q": "Q2", "coIds": ["CO_C201_2"], "maxMarks": 10 }
+    ]},
+    { "id": "A_CME1_1", "sectionId": "SEC_A_P1_2025", "name": "Mid Term (Mechanics)", "type": "Internal", "questions": [
+        { "q": "Q1", "coIds": ["CO_ME1_1"], "maxMarks": 20 },
+        { "q": "Q2", "coIds": ["CO_ME1_2"], "maxMarks": 20 }
+    ]}
+  ],
+  "marks": [
+    {"studentId":"25ECE1001","assessmentId":"A_C102_1","scores":[{"q":"Q1","marks":8},{"q":"Q2","marks":12}]},
+    {"studentId":"25ECE1001","assessmentId":"A_C201_1","scores":[{"q":"Q1","marks":9},{"q":"Q2","marks":7}]},
+    {"studentId":"25ECE1002","assessmentId":"A_C102_1","scores":[{"q":"Q1","marks":4},{"q":"Q2","marks":5}]},
+    {"studentId":"25ECE1002","assessmentId":"A_C201_1","scores":[{"q":"Q1","marks":8},{"q":"Q2","marks":9}]},
+    {"studentId":"25ECE1003","assessmentId":"A_C102_1","scores":[{"q":"Q1","marks":9},{"q":"Q2","marks":11}]},
+    {"studentId":"25ECE1003","assessmentId":"A_C201_1","scores":[{"q":"Q1","marks":6},{"q":"Q2","marks":8}]},
+    {"studentId":"25ECE1005","assessmentId":"A_C102_1","scores":[{"q":"Q1","marks":10},{"q":"Q2","marks":10}]},
+    {"studentId":"25ECE1005","assessmentId":"A_C201_1","scores":[{"q":"Q1","marks":7},{"q":"Q2","marks":5}]},
+    {"studentId":"25ECE2001","assessmentId":"A_C102_2","scores":[{"q":"Q1","marks":18},{"q":"Q2","marks":22}]},
+    {"studentId":"25ECE2002","assessmentId":"A_C102_2","scores":[{"q":"Q1","marks":15},{"q":"Q2","marks":24}]},
+    {"studentId":"25ECE2003","assessmentId":"A_C102_2","scores":[{"q":"Q1","marks":9},{"q":"Q2","marks":10}]},
+    {"studentId":"25ME1001","assessmentId":"A_CME1_1","scores":[{"q":"Q1","marks":15},{"q":"Q2","marks":18}]},
+    {"studentId":"25ME1002","assessmentId":"A_CME1_1","scores":[{"q":"Q1","marks":11},{"q":"Q2","marks":10}]},
+    {"studentId":"25ME1003","assessmentId":"A_CME1_1","scores":[{"q":"Q1","marks":19},{"q":"Q2","marks":17}]}
+  ]
+}

@@ -1,0 +1,115 @@
+<!--
+  @file index.html
+  @description
+  This is the very first file the web browser opens when someone visits our website.
+  Think of it as the blueprint for a house before we start building. It sets up the
+  basic structure and tells the browser what tools and materials (like styles and scripts)
+  it needs to build our beautiful application.
+-->
+<!DOCTYPE html>
+<!-- This line says, "Hey browser, I'm a modern webpage using the latest HTML rules (HTML5)." -->
+<html lang="en" class="h-full">
+  <!-- The <head> is like the "brain" or "control room" of the page.
+       It contains all the important information that you don't see on the screen,
+       but it tells the browser how to work, what the page is called, and where to find its tools. -->
+  <head>
+    <meta charset="UTF-8" />
+    
+    <!-- This is the little picture (like a tiny logo) that you see in the browser tab. -->
+    <link rel="icon" type="image/png" href="https://d1hbpr09pwz0sk.cloudfront.net/logo_url/chitkara-university-4c35e411" />
+    
+    <!-- This is a special instruction for mobile phones. It tells them, "Make the page fit
+         the width of your screen, and don't try to zoom out." This makes the app look good on phones. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- This is the text that appears as the title in the browser tab. -->
+    <title>NBA OBE Portal</title>
+    
+    <!-- SCRIPT TOOLBOXES -->
+    <!-- These lines are like telling the browser, "Before you do anything else, go to these
+         internet addresses and grab these toolboxes for me. I'll need them later." -->
+
+    <!-- 1. TailwindCSS: This is our giant box of digital crayons, stickers, and building blocks for styling.
+         It gives us all the easy-to-use classes (like "bg-blue-500" for a blue background) that let us
+         make our app look nice without writing a lot of custom CSS code. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 2. SheetJS (xlsx): This is our "Excel expert" toolbox. It's a special library that
+         knows how to read and understand Microsoft Excel files (.xlsx). We use this for all the
+         "Upload Excel" buttons in our app. -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    
+    <!-- 3. PDF Generation Libraries: These two toolboxes work together like a photographer and a printer.
+         - html2canvas: This is the "photographer". It knows how to take a perfect, high-quality
+           "screenshot" of a part of our webpage.
+         - jsPDF: This is the "printer". It takes the screenshot from html2canvas and turns it into
+           a beautiful, multi-page PDF file that the user can download.
+         The 'defer' attribute is a special instruction that says: "You can download these toolboxes
+         now, but please wait until the rest of the page is fully built before you open them."
+         This is very important because it prevents errors where our app might try to use a tool
+         before it's ready. -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- This is our app's "address book" or "map". It tells the browser that whenever our
+         main code (`index.tsx`) asks for a big, important tool like "react" or "react-router-dom",
+         it should go to these specific internet addresses to find them. This is how our app
+         gets the core React library that makes everything work. -->
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/": "https://esm.sh/react-dom@18.2.0/",
+    "react/": "https://esm.sh/react@18.2.0/",
+    "chart.js": "https://cdn.jsdelivr.net/npm/chart.js@4.4.2/+esm",
+    "react-chartjs-2": "https://cdn.jsdelivr.net/npm/react-chartjs-2@5.2.0/+esm",
+    "react-router-dom": "https://esm.sh/react-router-dom@6.23.1"
+  }
+}
+</script>
+
+<!-- PRINT-ONLY STYLES -->
+<!-- This is a special set of rules that only apply when the user tries to print the page (or save as PDF).
+     It's like a magic costume the page puts on just before it goes to the printer. Its main job is to
+     make the final paper copy look clean and professional by hiding everything that shouldn't be on it,
+     like buttons, sidebars, and headers, so that only the report itself is visible. -->
+<style type="text/css" media="print">
+    /* Rule 1: When printing, make everything on the page invisible by default. */
+    body * {
+        visibility: hidden;
+    }
+    /* Rule 2: But, find the special area we marked as 'printable-area' and make IT and everything
+       inside it visible again. This is how we select only the report. */
+    .printable-area, .printable-area * {
+        visibility: visible;
+    }
+    /* Rule 3: Make sure our printable area is positioned perfectly at the top-left corner of the paper. */
+    .printable-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+    /* Rule 4: A helper rule to hide any specific little things inside the report that we still
+       don't want to print, like a "Print" button. */
+    .print\:hidden {
+        display: none !important;
+    }
+</style>
+
+</head>
+  <!-- The <body> is the main visible part of the house. Everything you can see on the screen—all
+       the furniture, windows, and doors—lives inside here. -->
+  <body class="h-full bg-gray-100 text-gray-800" style="transform: scale(0.75); transform-origin: top left; width: 133.33vw; height: 133.33vh;">
+    <!-- THIS IS THE MOST IMPORTANT DIV ON THE WHOLE PAGE!
+         Think of this `div` with the id "root" as the main stage in a theater. Our entire React application,
+         with all its components, pages, and buttons, will be built and "performed" on this stage.
+         The `index.tsx` file (our director) looks for this specific stage by its ID to know where to start the show. -->
+    <div id="root" class="h-full"></div>
+    
+    <!-- This is the final step. It's like the director shouting "Action!".
+         This script tag tells the browser to go and run our main application code, which lives in `index.tsx`.
+         This one line kicks off the entire React app and brings our beautiful page to life. -->
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

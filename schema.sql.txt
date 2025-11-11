@@ -1,0 +1,195 @@
+-- =================================================================
+-- Schema for NBA Outcome Based Education Portal
+-- Database: PostgreSQL
+-- =================================================================
+
+-- Drop tables in reverse order of dependency to avoid foreign key errors
+DROP TABLE IF EXISTS marks, assessments, co_po_mapping, program_outcomes, course_outcomes, enrollments, students, sections, batches, courses, users, programs, colleges, system_settings;
+
+-- -----------------------------------------------------------------
+-- Table `system_settings`
+-- A single-row table to store system-wide default configurations.
+-- -----------------------------------------------------------------
+CREATE TABLE system_settings (
+    id INT PRIMARY KEY DEFAULT 1,
+    default_co_target INT NOT NULL,
+    default_attainment_level3 INT NOT NULL,
+    default_attainment_level2 INT NOT NULL,
+    default_attainment_level1 INT NOT NULL,
+    default_weight_direct INT NOT NULL,
+    default_weight_indirect INT NOT NULL,
+    CONSTRAINT id_is_one CHECK (id = 1)
+);
+
+-- -----------------------------------------------------------------
+-- Table `colleges`
+-- Stores the academic colleges.
+-- -----------------------------------------------------------------
+CREATE TABLE colleges (
+    id VARCHAR(10) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+
+-- -----------------------------------------------------------------
+-- Table `programs`
+-- Stores academic programs, linked to a college.
+-- -----------------------------------------------------------------
+CREATE TABLE programs (
+    id VARCHAR(20) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    college_id VARCHAR(10) NOT NULL REFERENCES colleges(id) ON DELETE CASCADE,
+    duration INT NOT NULL
+);
+
+-- -----------------------------------------------------------------
+-- Table `users`
+-- Stores user account information for all roles.
+-- -----------------------------------------------------------------
+CREATE TABLE users (
+    id VARCHAR(20) PRIMARY KEY,
+    employee_id VARCHAR(50) UNIQUE NOT NULL,
+    username VARCHAR(150) UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    role VARCHAR(50) NOT NULL CHECK (role IN ('Teacher', 'Program Co-ordinator', 'University', 'Admin', 'Department')),
+    name VARCHAR(255) NOT NULL,
+    status VARCHAR(10) NOT NULL DEFAULT 'Active' CHECK (status IN ('Active', 'Inactive')),
+    
+    -- Role-specific Foreign Keys (nullable)
+    program_id VARCHAR(20) REFERENCES programs(id) ON DELETE SET NULL, -- For Program Co-ordinator
+    college_id VARCHAR(10) REFERENCES colleges(id) ON DELETE SET NULL, -- For Department Head
+    department_id VARCHAR(20) REFERENCES users(id) ON DELETE SET NULL, -- PC's link to Department Head
+    
+    -- NOTE: In a pure relational model, this would be a junction table (e.g., teacher_pc_assignments).
+    -- Using a text array is a simpler approach for this application.
+    program_coordinator_ids TEXT[] -- For Teacher
+);
+
+-- -----------------------------------------------------------------
+-- Table `courses`
+-- Stores course information, linked to a program.
+-- -----------------------------------------------------------------
+CREATE TABLE courses (
+    id VARCHAR(20) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    code VARCHAR(50) NOT NULL,
+    program_id VARCHAR(20) NOT NULL REFERENCES programs(id) ON DELETE CASCADE,
+    target INT NOT NULL,
+    internal_weightage INT NOT NULL,
+    external_weightage INT NOT NULL,
+    attainment_level3 INT NOT NULL,
+    attainment_level2 INT NOT NULL,
+    attainment_level1 INT NOT NULL,
+    status VARCHAR(20) NOT NULL CHECK (status IN ('Active', 'Completed', 'Future')),
+    teacher_id VARCHAR(20) REFERENCES users(id) ON DELETE SET NULL,
+    
+    -- NOTE: This stores key-value pairs (section_id: teacher_id). JSONB is efficient for this.
+    section_teacher_ids JSONB
+);
+
+-- -----------------------------------------------------------------
+-- Table `batches`
+-- Stores student batches for a program (e.g., 2025-2029).
+-- -----------------------------------------------------------------
+CREATE TABLE batches (
+    id VARCHAR(20) PRIMARY KEY,
+    program_id VARCHAR(20) NOT NULL REFERENCES programs(id) ON DELETE CASCADE,
+    name VARCHAR(50) NOT NULL
+);
+
+-- -----------------------------------------------------------------
+-- Table `sections`
+-- Stores class sections within a program and batch.
+-- -----------------------------------------------------------------
+CREATE TABLE sections (
+    id VARCHAR(20) PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    program_id VARCHAR(20) NOT NULL REFERENCES programs(id) ON DELETE CASCADE,
+    batch_id VARCHAR(20) NOT NULL REFERENCES batches(id) ON DELETE CASCADE
+);
+
+-- -----------------------------------------------------------------
+-- Table `students`
+-- Stores student information.
+-- -----------------------------------------------------------------
+CREATE TABLE students (
+    id VARCHAR(20) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    program_id VARCHAR(20) NOT NULL REFERENCES programs(id) ON DELETE CASCADE,
+    status VARCHAR(10) NOT NULL CHECK (status IN ('Active', 'Inactive')),
+    section_id VARCHAR(20) REFERENCES sections(id) ON DELETE SET NULL
+);
+
+-- -----------------------------------------------------------------
+-- Table `enrollments`
+-- Junction table linking students to the courses they are enrolled in.
+-- -----------------------------------------------------------------
+CREATE TABLE enrollments (
+    course_id VARCHAR(20) NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+    student_id VARCHAR(20) NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+    section_id VARCHAR(20) REFERENCES sections(id) ON DELETE SET NULL,
+    PRIMARY KEY (course_id, student_id)
+);
+
+-- -----------------------------------------------------------------
+-- Table `course_outcomes`
+-- Stores the COs for each course.
+-- -----------------------------------------------------------------
+CREATE TABLE course_outcomes (
+    id VARCHAR(20) PRIMARY KEY,
+    course_id VARCHAR(20) NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+    number VARCHAR(10) NOT NULL,
+    description TEXT NOT NULL
+);
+
+-- -----------------------------------------------------------------
+-- Table `program_outcomes`
+-- Stores the POs for each program.
+-- -----------------------------------------------------------------
+CREATE TABLE program_outcomes (
+    id VARCHAR(20) PRIMARY KEY,
+    program_id VARCHAR(20) NOT NULL REFERENCES programs(id) ON DELETE CASCADE,
+    number VARCHAR(10) NOT NULL,
+    description TEXT NOT NULL
+);
+
+-- -----------------------------------------------------------------
+-- Table `co_po_mapping`
+-- Junction table defining the mapping strength between COs and POs.
+-- -----------------------------------------------------------------
+CREATE TABLE co_po_mapping (
+    course_id VARCHAR(20) NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+    co_id VARCHAR(20) NOT NULL REFERENCES course_outcomes(id) ON DELETE CASCADE,
+    po_id VARCHAR(20) NOT NULL REFERENCES program_outcomes(id) ON DELETE CASCADE,
+    level INT NOT NULL CHECK (level IN (1, 2, 3)),
+    PRIMARY KEY (co_id, po_id)
+);
+
+-- -----------------------------------------------------------------
+-- Table `assessments`
+-- Stores assessments (tests, exams), linked to a section.
+-- -----------------------------------------------------------------
+CREATE TABLE assessments (
+    id VARCHAR(20) PRIMARY KEY,
+    section_id VARCHAR(20) NOT NULL REFERENCES sections(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    type VARCHAR(20) NOT NULL CHECK (type IN ('Internal', 'External')),
+    
+    -- NOTE: Storing questions as JSONB is a denormalized approach that mirrors the mock data.
+    -- A fully normalized schema would have separate `assessment_questions` and `question_co_mapping` tables.
+    questions JSONB NOT NULL
+);
+
+-- -----------------------------------------------------------------
+-- Table `marks`
+-- Stores the marks for a student in a specific assessment.
+-- -----------------------------------------------------------------
+CREATE TABLE marks (
+    student_id VARCHAR(20) NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+    assessment_id VARCHAR(20) NOT NULL REFERENCES assessments(id) ON DELETE CASCADE,
+    
+    -- NOTE: Storing scores as JSONB mirrors the mock data.
+    -- A fully normalized schema would have a `mark_scores` table linking a mark to a specific question.
+    scores JSONB NOT NULL,
+    
+    PRIMARY KEY (student_id, assessment_id)
+);

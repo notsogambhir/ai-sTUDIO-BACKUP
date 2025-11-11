@@ -1,0 +1,190 @@
+-- =================================================================
+-- Data Insertion for NBA Outcome Based Education Portal
+-- This script populates the tables defined in schema.sql.txt
+-- with the data from mockData.json.
+-- =================================================================
+
+-- The order of insertion is critical to respect foreign key constraints.
+
+-- 1. system_settings
+INSERT INTO system_settings (id, default_co_target, default_attainment_level3, default_attainment_level2, default_attainment_level1, default_weight_direct, default_weight_indirect) VALUES
+(1, 50, 80, 70, 50, 90, 10);
+
+-- 2. colleges
+INSERT INTO colleges (id, name) VALUES
+('CUIET', 'CUIET'),
+('CCP', 'CCP'),
+('CBS', 'CBS');
+
+-- 3. programs
+INSERT INTO programs (id, name, college_id, duration) VALUES
+('P1', 'BE ME', 'CUIET', 4),
+('P2', 'BE ECE', 'CUIET', 4),
+('P3', 'B. Pharma', 'CCP', 4),
+('P4', 'M. Pharma', 'CCP', 2),
+('P5', 'BBA', 'CBS', 3),
+('P6', 'MBA Global', 'CBS', 2);
+
+-- 4. users
+-- NOTE: Passwords should be properly hashed in a real application. This is a placeholder.
+INSERT INTO users (id, employee_id, username, password_hash, role, name, status, program_id, college_id, department_id, program_coordinator_ids) VALUES
+('U_ADMIN', 'ADM001', 'admin', 'password', 'Admin', 'Admin User', 'Active', NULL, NULL, NULL, NULL),
+('U_UNIV', 'UNV001', 'university', 'password', 'University', 'Dean Adams', 'Active', NULL, NULL, NULL, NULL),
+('DEPT_CUIET', 'DPT001', 'dept_cuiet', 'password', 'Department', 'Dr. Head CUIET', 'Active', NULL, 'CUIET', NULL, NULL),
+('DEPT_CCP', 'DPT002', 'dept_ccp', 'password', 'Department', 'Dr. Head CCP', 'Active', NULL, 'CCP', NULL, NULL),
+('DEPT_CBS', 'DPT003', 'dept_cbs', 'password', 'Department', 'Dr. Head CBS', 'Active', NULL, 'CBS', NULL, NULL),
+('PC_ME', 'PC011', 'pc_me', 'password', 'Program Co-ordinator', 'Mr. Mehra', 'Active', 'P1', NULL, 'DEPT_CUIET', NULL),
+('T_ME_1', 'TCH201', 'teacher_me1', 'password', 'Teacher', 'Prof. Anjali', 'Active', NULL, NULL, NULL, ARRAY['PC_ME']),
+('T_ME_2', 'TCH202', 'teacher_me2', 'password', 'Teacher', 'Dr. Singh', 'Active', NULL, NULL, NULL, ARRAY['PC_ME']),
+('T_ME_3', 'TCH203', 'teacher_me3', 'password', 'Teacher', 'Ms. Gupta', 'Active', NULL, NULL, NULL, ARRAY['PC_ME']),
+('PC_ECE', 'PC012', 'pc_ece', 'password', 'Program Co-ordinator', 'Ms. Jones', 'Active', 'P2', NULL, 'DEPT_CUIET', NULL),
+('T_ECE_1', 'TCH301', 'teacher_ece1', 'password', 'Teacher', 'Dr. Smith', 'Active', NULL, NULL, NULL, ARRAY['PC_ECE']),
+('T_ECE_2', 'TCH302', 'teacher_ece2', 'password', 'Teacher', 'Prof. Davis', 'Active', NULL, NULL, NULL, ARRAY['PC_ECE']),
+('T_ECE_3', 'TCH303', 'teacher_ece3', 'password', 'Teacher', 'Mr. Wilson', 'Active', NULL, NULL, NULL, ARRAY['PC_ECE', 'PC_ME']),
+('PC_BPHARMA', 'PC021', 'pc_bpharma', 'password', 'Program Co-ordinator', 'Dr. Patel', 'Active', 'P3', NULL, 'DEPT_CCP', NULL),
+('T_BPHARMA_1', 'TCH401', 'teacher_bpharma1', 'password', 'Teacher', 'Ms. Chen', 'Active', NULL, NULL, NULL, ARRAY['PC_BPHARMA']),
+('PC_BBA', 'PC031', 'pc_bba', 'password', 'Program Co-ordinator', 'Mr. Carter', 'Active', 'P5', NULL, 'DEPT_CBS', NULL),
+('T_BBA_1', 'TCH601', 'teacher_bba1', 'password', 'Teacher', 'Mrs. Lee', 'Active', NULL, NULL, NULL, ARRAY['PC_BBA']);
+
+-- 5. batches
+INSERT INTO batches (id, program_id, name) VALUES
+('B_P1_2025', 'P1', '2025-2029'),
+('B_P2_2025', 'P2', '2025-2029'),
+('B_P2_2024', 'P2', '2024-2028'),
+('B_P2_2023', 'P2', '2023-2027'),
+('B_P3_2025', 'P3', '2025-2029'),
+('B_P5_2025', 'P5', '2025-2028');
+
+-- 6. sections
+INSERT INTO sections (id, name, program_id, batch_id) VALUES
+('SEC_A_P2_2025', 'A', 'P2', 'B_P2_2025'),
+('SEC_B_P2_2025', 'B', 'P2', 'B_P2_2025'),
+('SEC_A_P2_2024', 'A', 'P2', 'B_P2_2024'),
+('SEC_A_P1_2025', 'A', 'P1', 'B_P1_2025'),
+('SEC_A_P3_2025', 'A', 'P3', 'B_P3_2025');
+
+-- 7. courses
+INSERT INTO courses (id, name, code, program_id, status, teacher_id, target, internal_weightage, external_weightage, attainment_level3, attainment_level2, attainment_level1, section_teacher_ids) VALUES
+('C101', 'Introduction to Programming', 'CS101', 'P2', 'Completed', 'T_ECE_1', 50, 25, 75, 80, 70, 50, NULL),
+('C102', 'Database Management Systems', 'CS203', 'P2', 'Active', 'T_ECE_1', 50, 25, 75, 80, 70, 50, '{"SEC_A_P2_2025": "T_ECE_1", "SEC_B_P2_2025": "T_ECE_2"}'),
+('C103', 'Network Theory', 'EC201', 'P2', 'Completed', 'T_ECE_2', 50, 25, 75, 80, 70, 50, NULL),
+('C201', 'Digital Logic Design', 'EC202', 'P2', 'Active', 'T_ECE_2', 50, 25, 75, 80, 70, 50, NULL),
+('C202', 'Signals and Systems', 'EC204', 'P2', 'Active', 'T_ECE_2', 50, 25, 75, 80, 70, 50, NULL),
+('C301', 'Microprocessors', 'EC301', 'P2', 'Active', 'T_ECE_3', 50, 25, 75, 80, 70, 50, NULL),
+('C302', 'Communication Systems', 'EC305', 'P2', 'Active', 'T_ECE_3', 50, 25, 75, 80, 70, 50, NULL),
+('C401', 'VLSI Design', 'EC401', 'P2', 'Future', NULL, 50, 25, 75, 80, 70, 50, NULL),
+('C402', 'Embedded Systems', 'EC405', 'P2', 'Future', NULL, 50, 25, 75, 80, 70, 50, NULL),
+('C_ME_1', 'Engineering Mechanics', 'ME101', 'P1', 'Active', 'T_ME_1', 50, 25, 75, 80, 70, 50, NULL),
+('C_ME_2', 'Thermodynamics', 'ME201', 'P1', 'Active', 'T_ME_2', 50, 25, 75, 80, 70, 50, NULL),
+('C_PH_1', 'Pharmaceutical Chemistry', 'PC101', 'P3', 'Active', 'T_BPHARMA_1', 60, 30, 70, 85, 75, 60, NULL);
+
+-- 8. students
+INSERT INTO students (id, name, program_id, status, section_id) VALUES
+('25ECE1001', 'Alice Johnson', 'P2', 'Active', 'SEC_A_P2_2025'),
+('25ECE1002', 'Bob Williams', 'P2', 'Active', 'SEC_A_P2_2025'),
+('25ECE1003', 'Charlie Brown', 'P2', 'Active', 'SEC_A_P2_2025'),
+('25ECE1004', 'Diana Miller', 'P2', 'Inactive', 'SEC_A_P2_2025'),
+('25ECE1005', 'Ethan Davis', 'P2', 'Active', 'SEC_A_P2_2025'),
+('25ECE2001', 'Fiona Garcia', 'P2', 'Active', 'SEC_B_P2_2025'),
+('25ECE2002', 'George Rodriguez', 'P2', 'Active', 'SEC_B_P2_2025'),
+('25ECE2003', 'Hannah Wilson', 'P2', 'Active', 'SEC_B_P2_2025'),
+('25ECE2004', 'Ian Martinez', 'P2', 'Active', 'SEC_B_P2_2025'),
+('25ECE2005', 'Jane Anderson', 'P2', 'Active', 'SEC_B_P2_2025'),
+('24ECE1001', 'Kevin Taylor', 'P2', 'Active', 'SEC_A_P2_2024'),
+('24ECE1002', 'Liam Thomas', 'P2', 'Active', 'SEC_A_P2_2024'),
+('24ECE1003', 'Mona Hernandez', 'P2', 'Active', 'SEC_A_P2_2024'),
+('24ECE1004', 'Nina Moore', 'P2', 'Inactive', 'SEC_A_P2_2024'),
+('24ECE1005', 'Oscar Martin', 'P2', 'Active', 'SEC_A_P2_2024'),
+('25ME1001', 'Paul Jackson', 'P1', 'Active', 'SEC_A_P1_2025'),
+('25ME1002', 'Quincy Thompson', 'P1', 'Active', 'SEC_A_P1_2025'),
+('25ME1003', 'Rachel White', 'P1', 'Active', 'SEC_A_P1_2025'),
+('25PH1001', 'Sam Harris', 'P3', 'Active', 'SEC_A_P3_2025'),
+('25PH1002', 'Tina Clark', 'P3', 'Active', 'SEC_A_P3_2025'),
+('25PH1003', 'Uma Lewis', 'P3', 'Active', NULL),
+('25PH1004', 'Victor Robinson', 'P3', 'Active', NULL);
+
+-- 9. enrollments
+INSERT INTO enrollments (course_id, student_id, section_id) VALUES
+('C102', '25ECE1001', 'SEC_A_P2_2025'),
+('C201', '25ECE1001', 'SEC_A_P2_2025'),
+('C202', '25ECE1001', 'SEC_A_P2_2025'),
+('C102', '25ECE1002', 'SEC_A_P2_2025'),
+('C201', '25ECE1002', 'SEC_A_P2_2025'),
+('C202', '25ECE1002', 'SEC_A_P2_2025'),
+('C102', '25ECE1003', 'SEC_A_P2_2025'),
+('C201', '25ECE1003', 'SEC_A_P2_2025'),
+('C202', '25ECE1003', 'SEC_A_P2_2025'),
+('C102', '25ECE1004', 'SEC_A_P2_2025'),
+('C201', '25ECE1004', 'SEC_A_P2_2025'),
+('C102', '25ECE1005', 'SEC_A_P2_2025'),
+('C201', '25ECE1005', 'SEC_A_P2_2025'),
+('C102', '25ECE2001', 'SEC_B_P2_2025'),
+('C301', '25ECE2001', 'SEC_B_P2_2025'),
+('C302', '25ECE2001', 'SEC_B_P2_2025'),
+('C102', '25ECE2002', 'SEC_B_P2_2025'),
+('C301', '25ECE2002', 'SEC_B_P2_2025'),
+('C302', '25ECE2002', 'SEC_B_P2_2025'),
+('C102', '25ECE2003', 'SEC_B_P2_2025'),
+('C301', '25ECE2003', 'SEC_B_P2_2025'),
+('C_ME_1', '25ME1001', 'SEC_A_P1_2025'),
+('C_ME_2', '25ME1001', 'SEC_A_P1_2025'),
+('C_ME_1', '25ME1002', 'SEC_A_P1_2025'),
+('C_ME_2', '25ME1002', 'SEC_A_P1_2025'),
+('C_ME_1', '25ME1003', 'SEC_A_P1_2025'),
+('C_PH_1', '25PH1001', 'SEC_A_P3_2025'),
+('C_PH_1', '25PH1002', 'SEC_A_P3_2025');
+
+-- 10. course_outcomes
+INSERT INTO course_outcomes (id, course_id, number, description) VALUES
+('CO_C102_1', 'C102', 'CO1', 'Understand database concepts and structures.'),
+('CO_C102_2', 'C102', 'CO2', 'Design and implement a relational database.'),
+('CO_C102_3', 'C102', 'CO3', 'Formulate queries using SQL.'),
+('CO_C201_1', 'C201', 'CO1', 'Understand number systems and logic gates.'),
+('CO_C201_2', 'C201', 'CO2', 'Design combinational and sequential logic circuits.'),
+('CO_ME1_1', 'C_ME_1', 'CO1', 'Apply principles of statics to analyze rigid bodies.'),
+('CO_ME1_2', 'C_ME_1', 'CO2', 'Analyze forces in structures like trusses and frames.');
+
+-- 11. program_outcomes
+INSERT INTO program_outcomes (id, program_id, number, description) VALUES
+('PO_P1_1', 'P1', 'PO1', 'Engineering knowledge for ME.'),
+('PO_P1_2', 'P1', 'PO2', 'Problem analysis for ME.'),
+('PO_P2_1', 'P2', 'PO1', 'Engineering knowledge'),
+('PO_P2_2', 'P2', 'PO2', 'Problem analysis'),
+('PO_P2_3', 'P2', 'PO3', 'Design/development of solutions'),
+('PO_P2_4', 'P2', 'PO4', 'Conduct investigations of complex problems'),
+('PO_P3_1', 'P3', 'PO1', 'Pharmacy Knowledge');
+
+-- 12. co_po_mapping
+INSERT INTO co_po_mapping (course_id, co_id, po_id, level) VALUES
+('C102', 'CO_C102_1', 'PO_P2_1', 3),
+('C102', 'CO_C102_2', 'PO_P2_2', 2),
+('C102', 'CO_C102_3', 'PO_P2_3', 3),
+('C201', 'CO_C201_1', 'PO_P2_1', 3),
+('C201', 'CO_C201_2', 'PO_P2_3', 3),
+('C_ME_1', 'CO_ME1_1', 'PO_P1_1', 3),
+('C_ME_1', 'CO_ME1_1', 'PO_P1_2', 2),
+('C_ME_1', 'CO_ME1_2', 'PO_P1_2', 3);
+
+-- 13. assessments
+INSERT INTO assessments (id, section_id, name, type, questions) VALUES
+('A_C102_1', 'SEC_A_P2_2025', 'Sessional Test 1 (DBMS)', 'Internal', '[{"q": "Q1", "coIds": ["CO_C102_1"], "maxMarks": 10}, {"q": "Q2", "coIds": ["CO_C102_2"], "maxMarks": 15}]'),
+('A_C102_2', 'SEC_B_P2_2025', 'Final Exam (DBMS)', 'External', '[{"q": "Q1", "coIds": ["CO_C102_1", "CO_C102_2"], "maxMarks": 20}, {"q": "Q2", "coIds": ["CO_C102_3"], "maxMarks": 25}]'),
+('A_C201_1', 'SEC_A_P2_2025', 'Sessional Test 1 (DLD)', 'Internal', '[{"q": "Q1", "coIds": ["CO_C201_1"], "maxMarks": 10}, {"q": "Q2", "coIds": ["CO_C201_2"], "maxMarks": 10}]'),
+('A_CME1_1', 'SEC_A_P1_2025', 'Mid Term (Mechanics)', 'Internal', '[{"q": "Q1", "coIds": ["CO_ME1_1"], "maxMarks": 20}, {"q": "Q2", "coIds": ["CO_ME1_2"], "maxMarks": 20}]');
+
+-- 14. marks
+INSERT INTO marks (student_id, assessment_id, scores) VALUES
+('25ECE1001', 'A_C102_1', '[{"q": "Q1", "marks": 8}, {"q": "Q2", "marks": 12}]'),
+('25ECE1001', 'A_C201_1', '[{"q": "Q1", "marks": 9}, {"q": "Q2", "marks": 7}]'),
+('25ECE1002', 'A_C102_1', '[{"q": "Q1", "marks": 4}, {"q": "Q2", "marks": 5}]'),
+('25ECE1002', 'A_C201_1', '[{"q": "Q1", "marks": 8}, {"q": "Q2", "marks": 9}]'),
+('25ECE1003', 'A_C102_1', '[{"q": "Q1", "marks": 9}, {"q": "Q2", "marks": 11}]'),
+('25ECE1003', 'A_C201_1', '[{"q": "Q1", "marks": 6}, {"q": "Q2", "marks": 8}]'),
+('25ECE1005', 'A_C102_1', '[{"q": "Q1", "marks": 10}, {"q": "Q2", "marks": 10}]'),
+('25ECE1005', 'A_C201_1', '[{"q": "Q1", "marks": 7}, {"q": "Q2", "marks": 5}]'),
+('25ECE2001', 'A_C102_2', '[{"q": "Q1", "marks": 18}, {"q": "Q2", "marks": 22}]'),
+('25ECE2002', 'A_C102_2', '[{"q": "Q1", "marks": 15}, {"q": "Q2", "marks": 24}]'),
+('25ECE2003', 'A_C102_2', '[{"q": "Q1", "marks": 9}, {"q": "Q2", "marks": 10}]'),
+('25ME1001', 'A_CME1_1', '[{"q": "Q1", "marks": 15}, {"q": "Q2", "marks": 18}]'),
+('25ME1002', 'A_CME1_1', '[{"q": "Q1", "marks": 11}, {"q": "Q2", "marks": 10}]'),
+('25ME1003', 'A_CME1_1', '[{"q": "Q1", "marks": 19}, {"q": "Q2", "marks": 17}]');
