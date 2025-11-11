@@ -1,25 +1,7 @@
 /**
  * @file CourseFacultyAssignment.tsx
  * @description
- * This component is the "Faculty Assignment" tab within the `CourseDetail` page. It's where
- * a Program Co-ordinator or Admin can assign teachers to a course.
- *
- * It features a dual-mode assignment system:
- * 1.  **Single Teacher Mode**: Assign one teacher to the entire course. This is the default.
- * 2.  **Assign by Section Mode**: Assign a different teacher to each specific class section.
- *     This overrides the single teacher assignment for those sections.
- *
- * What it does:
- * 1.  **Mode Switching**: Provides buttons to toggle between the two assignment modes. It uses a
- *     confirmation modal to warn the user if switching modes will clear existing assignments.
- * 2.  **Assignment UI**: Shows a different UI based on the selected mode:
- *     - A single dropdown for "Single Teacher" mode.
- *     - A list of sections, each with its own dropdown, for "Assign by Section" mode.
- * 3.  **Draft State**: All assignment changes are held in a temporary "draft state". The `SaveBar`
- *     appears when changes are made, allowing the user to save or cancel.
- * 4.  **Filters Teachers**: The list of available teachers in the dropdowns is filtered based
- *     on the current user's role (a PC sees their managed teachers, an Admin sees all teachers).
- * 5.  **Reset Functionality**: Includes a button to reset all section assignments back to the course default.
+ * This component is the "Faculty Assignment" tab within the `CourseDetail` page.
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -27,35 +9,28 @@ import { Course, User } from '../types';
 import { useAppContext } from '../hooks/useAppContext';
 import SaveBar from './SaveBar';
 import ConfirmationModal from './ConfirmationModal';
+import apiClient from '../api';
 
-// Defines the "props" or properties this component accepts.
 interface CourseFacultyAssignmentProps {
   course: Course;
 }
-// Defines the possible assignment modes.
 type AssignmentMode = 'single' | 'section';
 
 const CourseFacultyAssignment: React.FC<CourseFacultyAssignmentProps> = ({ course }) => {
-  // We ask our "magic backpack" (AppContext) for the data and tools we need.
-  const { data, setData, currentUser } = useAppContext();
+  const { data, fetchAppData, currentUser } = useAppContext();
   
-  // --- State Management ---
-  // Draft state for holding temporary changes to the course.
   const [draftCourse, setDraftCourse] = useState<Course>(course);
   const [initialCourse, setInitialCourse] = useState<Course>(course);
   
-  // This `useEffect` resets the state whenever the user navigates to a different course.
   useEffect(() => {
     setDraftCourse(course);
     setInitialCourse(course);
   }, [course]);
 
-  // A piece of memory to remember which mode ('single' or 'section') is currently active.
   const [assignmentMode, setAssignmentMode] = useState<AssignmentMode>(
     course.sectionTeacherIds && Object.keys(course.sectionTeacherIds).length > 0 ? 'section' : 'single'
   );
 
-  // State for the "Are you sure?" confirmation popup.
   const [confirmation, setConfirmation] = useState<{
         isOpen: boolean;
         title: string;
@@ -63,57 +38,43 @@ const CourseFacultyAssignment: React.FC<CourseFacultyAssignmentProps> = ({ cours
         onConfirm: () => void;
     } | null>(null);
 
-  /**
-   * `useMemo` is a smart calculator that figures out which teachers and sections are relevant for this view.
-   * It only recalculates when its dependencies change.
-   */
   const { managedTeachers, courseSections } = useMemo(() => {
-    // Determine which teachers the current user is allowed to assign.
     let teachers: User[] = [];
     if (currentUser?.role === 'Program Co-ordinator') {
-        const myManagedTeacherIds = new Set(data.users.filter(u => u.role === 'Teacher' && u.programCoordinatorIds?.includes(currentUser.id)).map(u => u.id));
-        teachers = data.users.filter(u => myManagedTeacherIds.has(u.id));
+        const myManagedTeacherIds = new Set(data?.users.filter(u => u.role === 'Teacher' && u.programCoordinatorIds?.includes(currentUser.id)).map(u => u.id));
+        teachers = data?.users.filter(u => myManagedTeacherIds.has(u.id)) || [];
     } else if (currentUser?.role === 'Department' || currentUser?.role === 'Admin') {
-        // Department heads and Admins can assign any teacher that reports to PCs in their college.
-        const pcsInCollege = data.users.filter(u => u.role === 'Program Co-ordinator' && u.collegeId === currentUser.collegeId);
+        const pcsInCollege = data?.users.filter(u => u.role === 'Program Co-ordinator' && u.collegeId === currentUser.collegeId) || [];
         const pcIds = new Set(pcsInCollege.map(pc => pc.id));
-        teachers = data.users.filter(u => u.role === 'Teacher' && (u.programCoordinatorIds || []).some(id => pcIds.has(id)));
+        teachers = data?.users.filter(u => u.role === 'Teacher' && (u.programCoordinatorIds || []).some(id => pcIds.has(id))) || [];
     }
 
-    // Find all sections that have students enrolled in this course.
-    const enrolledSectionIds = new Set(data.enrollments
+    const enrolledSectionIds = new Set(data?.enrollments
         .filter(e => e.courseId === course.id && e.sectionId)
         .map(e => e.sectionId)
     );
-    const sections = data.sections.filter(s => enrolledSectionIds.has(s.id));
+    const sections = data?.sections.filter(s => enrolledSectionIds.has(s.id)) || [];
     
     return { managedTeachers: teachers, courseSections: sections };
   }, [data, currentUser, course.id]);
   
-  // `isDirty` checks if there are any unsaved changes.
   const isDirty = useMemo(() => JSON.stringify(draftCourse) !== JSON.stringify(initialCourse), [draftCourse, initialCourse]);
 
-  /**
-   * This function runs when the user clicks to switch assignment modes.
-   * It uses a confirmation modal to prevent accidental data loss.
-   */
   const handleModeChange = (mode: AssignmentMode) => {
-    if (mode === assignmentMode) return; // Do nothing if already in this mode.
+    if (mode === assignmentMode) return;
 
     if (mode === 'section') {
-      // If switching TO 'section' mode, warn the user it will clear the single-teacher assignment.
       setConfirmation({
         isOpen: true,
         title: "Confirm Assignment Mode Switch",
         message: "Switching to 'Assign by Section' will clear any existing single-teacher assignment for this course. Are you sure you want to proceed?",
         onConfirm: () => {
           setAssignmentMode('section');
-          setDraftCourse(prev => ({ ...prev, teacherId: null })); // Clear the single teacher ID.
+          setDraftCourse(prev => ({ ...prev, teacherId: null }));
           setConfirmation(null);
         }
       });
-    } else { // Switching to 'single' mode
-      // If switching TO 'single' mode, warn the user it will clear all section assignments.
+    } else {
       const hasSectionAssignments = draftCourse.sectionTeacherIds && Object.keys(draftCourse.sectionTeacherIds).length > 0;
       if (hasSectionAssignments) {
         setConfirmation({
@@ -123,23 +84,18 @@ const CourseFacultyAssignment: React.FC<CourseFacultyAssignmentProps> = ({ cours
           onConfirm: () => {
             setAssignmentMode('single');
             setDraftCourse(prev => {
-              const { sectionTeacherIds, ...rest } = prev; // This removes the sectionTeacherIds property.
+              const { sectionTeacherIds, ...rest } = prev;
               return rest as Course;
             });
             setConfirmation(null);
           }
         });
       } else {
-        setAssignmentMode(mode); // If no assignments to clear, just switch.
+        setAssignmentMode(mode);
       }
     }
   };
 
-  /**
-   * This function runs when the "Reset all to default" button is clicked.
-   * It opens a confirmation modal before clearing all section-specific assignments
-   * from the draft state, effectively making all sections use the single course teacher.
-   */
   const handleResetToDefault = () => {
     const hasSectionAssignments = draftCourse.sectionTeacherIds && Object.keys(draftCourse.sectionTeacherIds).length > 0;
     if (!hasSectionAssignments) {
@@ -153,7 +109,6 @@ const CourseFacultyAssignment: React.FC<CourseFacultyAssignmentProps> = ({ cours
       message: "Are you sure you want to clear all section-specific assignments? All sections will revert to using the course default teacher (if set). This change will be staged and can be saved or canceled.",
       onConfirm: () => {
         setDraftCourse(prev => {
-          // By creating a new object without the `sectionTeacherIds` key, we effectively remove it.
           const { sectionTeacherIds, ...rest } = prev;
           return rest as Course;
         });
@@ -162,8 +117,6 @@ const CourseFacultyAssignment: React.FC<CourseFacultyAssignmentProps> = ({ cours
     });
   };
 
-
-  // Handlers for updating the draft state when dropdowns change.
   const handleSingleTeacherChange = (teacherId: string) => {
     setDraftCourse(prev => ({ ...prev, teacherId: teacherId || null }));
   };
@@ -179,18 +132,19 @@ const CourseFacultyAssignment: React.FC<CourseFacultyAssignmentProps> = ({ cours
     });
   };
 
-  // Handlers for the SaveBar.
-  const handleSave = () => {
-    setData(prev => ({
-        ...prev,
-        courses: prev.courses.map(c => c.id === course.id ? draftCourse : c)
-    }));
-    setInitialCourse(draftCourse);
-    alert("Faculty assignments saved!");
+  const handleSave = async () => {
+    try {
+      await apiClient.patch(`/courses/${course.id}/`, draftCourse);
+      await fetchAppData();
+      setInitialCourse(draftCourse);
+      alert("Faculty assignments saved!");
+    } catch (error) {
+      console.error('Failed to save faculty assignments:', error);
+      alert('Failed to save assignments. Please try again.');
+    }
   };
   const handleCancel = () => {
     setDraftCourse(initialCourse);
-    // Also reset the mode to match the initial state.
     setAssignmentMode(initialCourse.sectionTeacherIds && Object.keys(initialCourse.sectionTeacherIds).length > 0 ? 'section' : 'single');
   };
 
@@ -238,7 +192,6 @@ const CourseFacultyAssignment: React.FC<CourseFacultyAssignmentProps> = ({ cours
          <div className="p-4 border rounded-lg bg-gray-50">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-md font-medium text-gray-700">Assign a teacher to each section</h3>
-              {/* The button to reset all section assignments to the course default. */}
               <button
                 onClick={handleResetToDefault}
                 className="text-sm text-indigo-600 hover:text-indigo-800 font-semibold"
@@ -262,7 +215,7 @@ const CourseFacultyAssignment: React.FC<CourseFacultyAssignmentProps> = ({ cours
                             <option value="">-- Use Course Default --</option>
                             {managedTeachers.map(teacher => (
                                 <option key={teacher.id} value={teacher.id}>{teacher.name}</option>
-                            ))}
+                            ))}\
                         </select>
                     </div>
                 ))}
