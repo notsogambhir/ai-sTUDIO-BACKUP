@@ -17,9 +17,10 @@
  *     of a course they are not assigned to.
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAppContext } from '../hooks/useAppContext';
+import apiClient from '../api';
 // Importing all the different components that will live inside the tabs.
 import ManageCourseOutcomes from '../components/ManageCourseOutcomes';
 import ManageCourseAssessments from '../components/ManageCourseAssessments';
@@ -43,7 +44,20 @@ const CourseDetail: React.FC = () => {
 
   // Find the course object that matches the ID from the URL.
   // `useMemo` is used here for a small performance optimization.
-  const course = useMemo(() => data.courses.find(c => c.id === courseId), [courseId, data.courses]);
+  const [course, setCourse] = useState<Course | null>(null);
+
+  useEffect(() => {
+    const fetchCourse = async () => {
+      try {
+        const response = await apiClient.get(`/courses/${courseId}/`);
+        setCourse(response.data);
+      } catch (error) {
+        console.error('Failed to fetch course:', error);
+      }
+    };
+
+    fetchCourse();
+  }, [courseId]);
   
   // --- Security Check ---
   // If the user is a Teacher, we check if they are actually assigned to this course.

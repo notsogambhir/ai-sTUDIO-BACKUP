@@ -36,7 +36,7 @@ class UserViewSet(viewsets.ModelViewSet):
         user = self.request.user
         queryset = User.objects.all().order_by('name')
 
-        if user.role == 'Admin':
+        if user.is_superuser or user.role == 'Admin':
             return queryset
 
         # Department Head sees all users in their college

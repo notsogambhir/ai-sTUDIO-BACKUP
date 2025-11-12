@@ -24,47 +24,38 @@ const ManageCourseAssessments: React.FC<ManageCourseAssessmentsProps> = ({ cours
 
   const isPC = currentUser?.role === 'Program Co-ordinator' || currentUser?.role === 'Admin';
 
-  const sectionsForDropdown = useMemo(() => {
-    const enrolledSectionIds = new Set(data?.enrollments.filter(e => e.courseId === course.id && e.sectionId).map(e => e.sectionId));
-    const allCourseSections = data?.sections.filter(s => enrolledSectionIds.has(s.id)) || [];
-
-    if (isPC) {
-        return allCourseSections;
-    }
-    
-    if (!currentUser || currentUser.role !== 'Teacher') return [];
-    
-    const teacherSectionIds = Object.entries(course.sectionTeacherIds || {})
-        .filter(([, teacherId]) => teacherId === currentUser.id)
-        .map(([sectionId]) => sectionId);
-
-    if (teacherSectionIds.length > 0) {
-        return allCourseSections.filter(s => teacherSectionIds.includes(s.id));
-    }
-    
-    if (course.teacherId === currentUser.id) {
-        return allCourseSections; 
-    }
-
-    return [];
-  }, [data, course, currentUser, isPC]);
+  const [sections, setSections] = useState([]);
+  const [assessments, setAssessments] = useState([]);
 
   useEffect(() => {
-    if (sectionsForDropdown.length > 0 && !sectionsForDropdown.some(s => s.id === selectedSectionId)) {
-        setSelectedSectionId(sectionsForDropdown[0].id);
-    } else if (sectionsForDropdown.length === 0) {
-        setSelectedSectionId(null);
-    }
-  }, [sectionsForDropdown, selectedSectionId]);
+    const fetchSections = async () => {
+      try {
+        const response = await apiClient.get(`/sections/?course_id=${course.id}`);
+        setSections(response.data);
+        if (response.data.length > 0) {
+          setSelectedSectionId(response.data[0].id);
+        }
+      } catch (error) {
+        console.error('Failed to fetch sections:', error);
+      }
+    };
+
+    fetchSections();
+  }, [course.id]);
 
   useEffect(() => {
-    setSelectedAssessmentId(null);
+    if (!selectedSectionId) return;
+    const fetchAssessments = async () => {
+      try {
+        const response = await apiClient.get(`/assessments/?section_id=${selectedSectionId}`);
+        setAssessments(response.data);
+      } catch (error) {
+        console.error('Failed to fetch assessments:', error);
+      }
+    };
+
+    fetchAssessments();
   }, [selectedSectionId]);
-
-  const assessments = useMemo(() => {
-    if (!selectedSectionId) return [];
-    return data?.assessments.filter(a => a.sectionId === selectedSectionId) || [];
-  }, [data?.assessments, selectedSectionId]);
 
   const handleDeleteAssessment = async (assessmentId: string) => {
     if (window.confirm("Are you sure you want to delete this assessment and all its questions and marks? This action cannot be undone.")) {
