@@ -18,7 +18,7 @@ interface AppContextType {
   selectedBatch: string | null;
   selectedCollegeId: string | null;
   setSelectedCollegeId: React.Dispatch<React.SetStateAction<string | null>>;
-  login: (username: string, password: string, college: College) => Promise<boolean>;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   setProgramAndBatch: (program: Program, batch: string) => void;
   goBackToProgramSelection: () => void;
@@ -59,7 +59,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   }, []);
 
-  const login = useCallback(async (username: string, password: string, college: College) => {
+  const login = useCallback(async (username: string, password: string) => {
     try {
       const response = await apiClient.post('/auth/login/', { username, password });
       const { token, user } = response.data;
@@ -68,7 +68,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       apiClient.defaults.headers.common['Authorization'] = `Token ${token}`;
 
       setCurrentUser(user);
-      setSelectedLoginCollege(college);
+
+      // The college is now part of the user object from the backend
+      setSelectedLoginCollege(user.college || null);
 
       if (user.role === 'Department' && user.collegeId) {
         setSelectedCollegeId(user.collegeId);

@@ -56,18 +56,23 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ userToEdit, onClose }) =>
             alert('Please fill all required fields, including password for new users.'); return;
         }
 
+        const payload: Partial<User> = { ...user };
+        if (userToEdit && !payload.password) {
+            delete payload.password;
+        }
+
         try {
             if (userToEdit) {
-                const { id, ...userData } = user;
-                await apiClient.patch(`/users/${id}/`, userData);
+                await apiClient.patch(`/users/${userToEdit.id}/`, payload);
             } else {
-                await apiClient.post('/users/', user);
+                await apiClient.post('/users/', payload);
             }
             await fetchAppData();
             onClose();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to save user:', error);
-            alert('Failed to save user. Please try again.');
+            const errorMsg = error.response?.data ? JSON.stringify(error.response.data) : 'Please check the console for details.';
+            alert(`Failed to save user. ${errorMsg}`);
         }
     };
     
@@ -79,12 +84,12 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ userToEdit, onClose }) =>
             <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input type="hidden" value={user.id} />
-                    <div><label className="block text-sm font-medium text-gray-700\">Full Name</label><input type="text" value={user.name} onChange={e => handleInputChange('name', e.target.value)} className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-gray-900 focus:outline-none focus:ring-indigo-500\" required /></div>
-                    <div><label className="block text-sm font-medium text-gray-700\">Employee ID</label><input type="text" value={user.employeeId} onChange={e => handleInputChange('employeeId', e.target.value)} className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-gray-900 focus:outline-none focus:ring-indigo-500\" required /></div>
-                    <div><label className="block text-sm font-medium text-gray-700\">Username</label><input type="text" value={user.username} onChange={e => handleInputChange('username', e.target.value)} className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-gray-900 focus:outline-none focus:ring-indigo-500\" required /></div>
-                    <div><label className="block text-sm font-medium text-gray-700\">Password</label><input type="password" value={user.password} onChange={e => handleInputChange('password', e.target.value)} placeholder={userToEdit ? 'Leave blank to keep unchanged' : ''} className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-gray-900 focus:outline-none focus:ring-indigo-500\" required={!userToEdit} /></div>
-                    <div><label className="block text-sm font-medium text-gray-700\">Role</label><select value={user.role} onChange={e => handleInputChange('role', e.target.value as Role)} className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-gray-900 focus:outline-none focus:ring-indigo-500\">{roles.map(r => <option key={r} value={r}>{r}</option>)}</select></div>
-                    <div><label className="block text-sm font-medium text-gray-700\">Status</label><select value={user.status} onChange={e => handleInputChange('status', e.target.value as 'Active' | 'Inactive')} className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-gray-900 focus:outline-none focus:ring-indigo-500\"><option value=\"Active\">Active</option><option value=\"Inactive\">Inactive</option></select></div>
+                    <div><label className='block text-sm font-medium text-gray-700'>Full Name</label><input type="text" value={user.name} onChange={e => handleInputChange('name', e.target.value)} className='mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-gray-900 focus:outline-none focus:ring-indigo-500' required /></div>
+                    <div><label className='block text-sm font-medium text-gray-700'>Employee ID</label><input type="text" value={user.employeeId} onChange={e => handleInputChange('employeeId', e.target.value)} className='mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-gray-900 focus:outline-none focus:ring-indigo-500' required /></div>
+                    <div><label className='block text-sm font-medium text-gray-700'>Username</label><input type="text" value={user.username} onChange={e => handleInputChange('username', e.target.value)} className='mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-gray-900 focus:outline-none focus:ring-indigo-500' required /></div>
+                    <div><label className='block text-sm font-medium text-gray-700'>Password</label><input type="password" value={user.password} onChange={e => handleInputChange('password', e.target.value)} placeholder={userToEdit ? 'Leave blank to keep unchanged' : ''} className='mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-gray-900 focus:outline-none focus:ring-indigo-500' required={!userToEdit} /></div>
+                    <div><label className='block text-sm font-medium text-gray-700'>Role</label><select value={user.role} onChange={e => handleInputChange('role', e.target.value as Role)} className='mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-gray-900 focus:outline-none focus:ring-indigo-500'>{roles.map(r => <option key={r} value={r}>{r}</option>)}</select></div>
+                    <div><label className='block text-sm font-medium text-gray-700'>Status</label><select value={user.status} onChange={e => handleInputChange('status', e.target.value as 'Active' | 'Inactive')} className='mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-gray-900 focus:outline-none focus:ring-indigo-500'><option value='Active'>Active</option><option value='Inactive'>Inactive</option></select></div>
                 </div>
 
                 {user.role === 'Department' && (

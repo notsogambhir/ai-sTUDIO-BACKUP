@@ -15,8 +15,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-)jue(t+@u(u%mbm94ch=%i#$%ctzrutr8o6=!1j*!y%x*^=d2!"
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-ALLOWED_HOSTS = []
+DEBUG = False
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 # Application definition
 # It's recommended to use a custom user model from the start
 AUTH_USER_MODEL = 'api.User'
@@ -106,6 +106,11 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ]
 }
-# CORS Settings (for development)
-# In production, this should be a more restrictive list
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS Settings
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+# If you need to allow credentials (cookies, authentication headers),
+# set this to True.
+# CORS_ALLOW_CREDENTIALS = True

@@ -7,7 +7,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../hooks/useAppContext';
-import { College } from '../types';
 
 const LoginScreen: React.FC = () => {
     const { login, data, setProgramAndBatch } = useAppContext();
@@ -15,20 +14,13 @@ const LoginScreen: React.FC = () => {
 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [college, setCollege] = useState<string>(data?.colleges[0]?.id || 'CUIET');
     const [error, setError] = useState('');
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        
-        const selectedCollege = data?.colleges.find(c => c.id === college);
-        if (!selectedCollege) {
-            setError('Please select a valid college.');
-            return;
-        }
 
-        const success = await login(username, password, selectedCollege);
+        const success = await login(username, password);
         if (success) {
             navigate('/');
         } else {
@@ -39,16 +31,15 @@ const LoginScreen: React.FC = () => {
     const handleDeveloperLoginShortcut = async () => {
         const devUser = data?.users.find(u => u.username === 'pc_ece');
         const devProgram = devUser ? data?.programs.find(p => p.id === devUser.programId) : undefined;
-        const devCollege = data?.colleges.find(c => c.id === 'CUIET');
 
-        if (devUser && devProgram && devUser.password && devCollege) {
-            const success = await login(devUser.username, devUser.password, devCollege);
+        if (devUser && devProgram && devUser.password) {
+            const success = await login(devUser.username, devUser.password);
             if (success) {
                 setProgramAndBatch(devProgram, '2025-2029');
                 navigate('/');
             }
         } else {
-            console.error("Developer shortcut failed: Could not find user 'pc_ece', their assigned program, or the college in the data.");
+            console.error("Developer shortcut failed: Could not find user 'pc_ece' or their assigned program in the data.");
         }
     };
 

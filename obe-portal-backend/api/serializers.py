@@ -15,9 +15,14 @@ class ProgramSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False)
+
     class Meta:
         model = User
-        fields = ('id', 'employee_id', 'username', 'role', 'name', 'status', 'program', 'college', 'department', 'program_coordinator_ids')
+        fields = ('id', 'employee_id', 'username', 'password', 'role', 'name', 'status', 'program', 'college', 'department', 'program_coordinator_ids')
+        extra_kwargs = {
+            'password': {'write_only': True},
+        }
 
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:

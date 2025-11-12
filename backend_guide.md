@@ -1,6 +1,6 @@
-# Backend Development Guide: NBA OBE Portal (Django REST Framework & Docker)
+# Backend Development Guide: NBA OBE Portal (Django REST Framework)
 
-This document provides a comprehensive, step-by-step guide for building the backend server for the NBA OBE Portal frontend. The recommended stack is **Django**, **Django REST Framework (DRF)**, **PostgreSQL**, and **Docker**.
+This document provides a comprehensive, step-by-step guide for building and running the backend server for the NBA OBE Portal frontend. The stack is **Django**, **Django REST Framework (DRF)**, and **PostgreSQL**.
 
 The primary goal is to replace the `mockData.json` file and all client-side `setData` calls with live API requests to this backend.
 
@@ -14,7 +14,7 @@ The primary goal is to replace the `mockData.json` file and all client-side `set
 
 1.  [Technology Stack](#1-technology-stack)
 2.  [Step 1: Project Setup](#2-step-1-project-setup)
-3.  [Step 2: Dockerization](#3-step-2-dockerization)
+3.  [Step 2: Database Setup](#3-step-2-database-setup)
 4.  [Step 3: Running the Development Environment](#4-step-3-running-the-development-environment)
 5.  [Step 4: Models & Migrations](#5-step-4-models--migrations)
 6.  [Step 5: Seeding Initial Data](#6-step-5-seeding-initial-data)
@@ -33,7 +33,6 @@ The primary goal is to replace the `mockData.json` file and all client-side `set
 *   **Backend Framework**: Django
 *   **API Toolkit**: Django REST Framework (DRF)
 *   **Database**: PostgreSQL
-*   **Containerization**: Docker, Docker Compose
 *   **Dependencies**: `psycopg2-binary`, `djangorestframework`, `django-cors-headers`, `gunicorn`
 
 ## 2. Step 1: Project Setup
@@ -41,206 +40,78 @@ The primary goal is to replace the `mockData.json` file and all client-side `set
 First, set up the basic Django project structure.
 
 ```bash
-# 1. Create a project directory
-mkdir obe-portal-backend && cd obe-portal-backend
+# 1. Navigate to the backend directory
+cd obe-portal-backend
 
-# 2. Start the Django project and an 'api' app
-# (Assuming you have Django installed locally to run this command)
-django-admin startproject obe_portal .
-python manage.py startapp api
+# 2. Create a virtual environment
+python3 -m venv venv
+source venv/bin/activate
 
-# 3. Create a requirements.txt file for dependencies
-touch requirements.txt
+# 3. Install dependencies
+pip install -r requirements.txt
 ```
 
-Populate `requirements.txt` with the following:
-```
-django
-djangorestframework
-psycopg2-binary
-django-cors-headers
-gunicorn
-```
+## 3. Step 2: Database Setup
 
-## 3. Step 2: Dockerization
+Set up the PostgreSQL database for the project.
 
-Containerizing the application with Docker ensures a consistent development and production environment.
-
-### Step 2a: Create the Dockerfile
-
-Create a file named `Dockerfile` in the project root:
-
-```dockerfile
-# Use an official Python runtime as a parent image
-FROM python:3.9-slim
-
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-
-# Set work directory
-WORKDIR /app
-
-# Install dependencies
-COPY requirements.txt /app/
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
-
-# Copy project
-COPY . /app/
-```
-
-### Step 2b: Create the Docker Compose File
-
-Create a file named `docker-compose.yml` to define and run the multi-container application (backend + database).
-
-```yaml
-version: '3.8'
-
-services:
-  db:
-    image: postgres:13
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_DB=obe_portal_db
-      - POSTGRES_USER=obe_user
-      - POSTGRES_PASSWORD=obe_password
-    ports:
-      - "5432:5432"
-
-  web:
-    build: .
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/app
-    ports:
-      - "8000:8000"
-    environment:
-      - SECRET_KEY=your_secret_key_for_development_only_change_in_production
-      - DJANGO_SETTINGS_MODULE=obe_portal.settings
-      - DB_NAME=obe_portal_db
-      - DB_USER=obe_user
-      - DB_PASSWORD=obe_password
-      - DB_HOST=db
-      - DB_PORT=5432
-    depends_on:
-      - db
-
-volumes:
-  postgres_data:
-```
-
-### Step 2c: Configure Django Settings
-
-Modify `obe_portal/settings.py` to be Docker-aware and read from environment variables.
-
-```python
-# obe_portal/settings.py
-import os # Add this import
-
-# It's recommended to use a custom user model from the start
-AUTH_USER_MODEL = 'api.User'
-
-INSTALLED_APPS = [
-    # ...
-    'rest_framework',
-    'rest_framework.authtoken',
-    'corsheaders',
-    'api',
-]
-
-MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
-    # ...
-]
-
-# Update DATABASES to read from environment variables
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PORT': os.environ.get('DB_PORT'),
-    }
-}
-
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ]
-}
-
-# CORS Settings (for development)
-# In production, this should be a more restrictive list
-CORS_ALLOW_ALL_ORIGINS = True 
-```
+1.  **Create a new PostgreSQL database:**
+    ```sql
+    CREATE DATABASE obe_portal_db;
+    ```
+2.  **Create a new user:**
+    ```sql
+    CREATE USER obe_user WITH PASSWORD 'obe_password';
+    ```
+3.  **Grant all privileges on the database to the new user:**
+    ```sql
+    GRANT ALL PRIVILEGES ON DATABASE obe_portal_db TO obe_user;
+    ```
 
 ## 4. Step 3: Running the Development Environment
 
-With Docker, starting your entire backend stack is a single command.
+With the database set up, you can now run the Django development server.
 
-```bash
-# Build and start the containers in detached mode
-docker-compose up --build -d
-```
+1.  **Set the environment variables:**
+    - Create a `.env` file in the `obe-portal-backend` directory.
+    - Add the following environment variables to the `.env` file:
+        ```
+        SECRET_KEY=your_secret_key_for_development_only_change_in_production
+        DJANGO_SETTINGS_MODULE=obe_portal.settings
+        DB_NAME=obe_portal_db
+        DB_USER=obe_user
+        DB_PASSWORD=obe_password
+        DB_HOST=localhost
+        DB_PORT=5432
+        ```
+2.  **Run the database migrations:**
+    ```bash
+    python manage.py migrate
+    ```
+3.  **Run the development server:**
+    ```bash
+    python manage.py runserver
+    ```
 Your Django API will now be running and accessible at `http://localhost:8000`.
 
 ## 5. Step 4: Models & Migrations
 
 Define your relational models in `api/models.py`. These models must be consistent with the frontend's `types.ts` and the provided `schema.sql.txt`. Use `ForeignKey` and `ManyToManyField` to represent relationships. For fields like `section_teacher_ids`, `questions`, and `scores`, Django's `JSONField` is a suitable choice. For `program_coordinator_ids`, an `ArrayField` (from `django.contrib.postgres.fields`) can be used.
 
-**Running Migrations**: Use `docker-compose exec` to run commands inside your `web` container.
-
+**Running Migrations**:
 ```bash
 # Generate migration files
-docker-compose exec web python manage.py makemigrations
+python manage.py makemigrations
 
 # Apply migrations to the database
-docker-compose exec web python manage.py migrate
+python manage.py migrate
 ```
 
 ## 6. Step 5: Seeding Initial Data
 
-Create a management command to seed the database from your `mockData.json` or, preferably, by executing the provided `data_insertion.sql.txt` script.
-
-**`api/management/commands/seed_data.py`:**
-
-```python
-from django.core.management.base import BaseCommand
-import json
-from api.models import User, College, Program, Batch, Section # ... and all other models
-
-class Command(BaseCommand):
-    help = 'Seeds the database with initial data from mockData.json'
-
-    def handle(self, *args, **options):
-        # Clear existing data
-        # ...
-        
-        with open('mockData.json', 'r') as f:
-            data = json.load(f)
-
-        # Seed Colleges, Programs...
-        
-        # Seed Batches
-        for batch_data in data['batches']:
-            # ...
-        
-        # Seed Sections
-        for section_data in data['sections']:
-            # ...
-
-        # ... (Continue seeding all other data models) ...
-```
-Run the seeder command:
+Seed the database with the initial data from the `data_insertion.sql.txt` script.
 ```bash
-docker-compose exec web python manage.py seed_data
+psql -U obe_user -d obe_portal_db -a -f data_insertion.sql.txt
 ```
 
 ## 7. Step 6: Serializers
@@ -382,9 +253,7 @@ This section provides a detailed list of required endpoints, permissions, and fi
 
 ## 13. Step 12: Deployment Considerations
 
-Docker significantly simplifies deployment.
-
-*   **Production `docker-compose.yml`**: Create a separate `docker-compose.prod.yml` that uses `gunicorn` instead of the Django development server and doesn't mount local volumes.
-*   **Environment Variables**: Instead of hardcoding, use your hosting provider's secrets management (e.g., AWS Secrets Manager, GitHub Actions Secrets) to inject environment variables into your containers at runtime. **Never commit production secrets.**
-*   **Web Server/Reverse Proxy**: Use `Nginx` in another Docker container to act as a reverse proxy. It will handle incoming traffic on ports 80/443, manage SSL termination, and forward requests to your Gunicorn container.
-*   **Static Files**: Your `Dockerfile` for production should include a step to run `python manage.py collectstatic`. The Nginx container should mount the static files volume to serve them directly, which is much more efficient.
+*   **Production Server**: Use a production-ready web server like Gunicorn to run the Django application.
+*   **Environment Variables**: Instead of hardcoding, use your hosting provider's secrets management (e.g., AWS Secrets Manager, GitHub Actions Secrets) to inject environment variables at runtime. **Never commit production secrets.**
+*   **Web Server/Reverse Proxy**: Use `Nginx` as a reverse proxy. It will handle incoming traffic on ports 80/443, manage SSL termination, and forward requests to your Gunicorn server.
+*   **Static Files**: Run `python manage.py collectstatic` to gather all static files into a single directory. The Nginx server should serve these files directly, which is much more efficient.
