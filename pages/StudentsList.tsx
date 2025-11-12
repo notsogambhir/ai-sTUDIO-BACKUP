@@ -32,54 +32,37 @@ const StudentsList: React.FC = () => {
   const isDepartmentHead = currentUser?.role === 'Department';
   const canManage = isProgramCoordinator || isAdmin || isDepartmentHead;
 
-  const { filteredStudents, pageTitle, subTitle } = useMemo(() => {
-    if (!data) return { filteredStudents: [], pageTitle: 'Student Management', subTitle: '' };
+  const [students, setStudents] = useState<Student[]>([]);
 
-    let students: Student[];
-        
-    if (isAdmin) {
-        students = data.students;
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        let url = '/students/';
+        const params = new URLSearchParams();
         if (selectedProgram) {
-            students = students.filter(s => s.programId === selectedProgram.id);
-            if (selectedBatch) {
-                const batch = data.batches.find(b => b.programId === selectedProgram.id && b.name === selectedBatch);
-                if (batch) {
-                    const sectionsForBatch = data.sections.filter(s => s.batchId === batch.id);
-                    const sectionIdsForBatch = new Set(sectionsForBatch.map(s => s.id));
-                    students = students.filter(s => s.sectionId && sectionIdsForBatch.has(s.sectionId));
-                } else {
-                    students = [];
-                }
-            }
+          params.append('program_id', selectedProgram.id);
         } else if (selectedCollegeId) {
-            const programIdsInCollege = new Set(data.programs.filter(p => p.collegeId === selectedCollegeId).map(p => p.id));
-            students = students.filter(s => programIdsInCollege.has(s.programId));
+          params.append('college_id', selectedCollegeId);
         }
-    } else if (isDepartmentHead && currentUser.collegeId) {
-        const programIdsInCollege = new Set(data.programs.filter(p => p.collegeId === currentUser.collegeId).map(p => p.id));
-        students = data.students.filter(s => programIdsInCollege.has(s.programId));
-
-        if (selectedProgram) {
-            students = students.filter(s => s.programId === selectedProgram.id);
-            if (selectedBatch) {
-                const batch = data.batches.find(b => b.programId === selectedProgram.id && b.name === selectedBatch);
-                if (batch) {
-                    const sectionsForBatch = data.sections.filter(s => s.batchId === batch.id);
-                    const sectionIdsForBatch = new Set(sectionsForBatch.map(s => s.id));
-                    students = students.filter(s => s.sectionId && sectionIdsForBatch.has(s.sectionId));
-                } else {
-                    students = [];
-                }
-            }
+        if (selectedBatch) {
+          params.append('batch_name', selectedBatch);
         }
-    }
-    else {
-        students = data.students.filter(s => s.programId === selectedProgram?.id);
-    }
+        url += `?${params.toString()}`;
+        const response = await apiClient.get(url);
+        setStudents(response.data);
+      } catch (error) {
+        console.error('Failed to fetch students:', error);
+      }
+    };
 
+    fetchStudents();
+  }, [selectedProgram, selectedBatch, selectedCollegeId]);
+
+  const { filteredStudents, pageTitle, subTitle } = useMemo(() => {
+    let filtered = students;
     if (searchTerm) {
       const lowercasedFilter = searchTerm.toLowerCase();
-      students = students.filter(student =>
+      filtered = students.filter(student =>
         student.name.toLowerCase().includes(lowercasedFilter) ||
         student.id.toLowerCase().includes(lowercasedFilter)
       );
@@ -90,12 +73,12 @@ const StudentsList: React.FC = () => {
         title = selectedProgram
             ? `Students in ${selectedProgram.name}`
             : selectedCollegeId
-                ? `Students in ${data.colleges.find(c => c.id === selectedCollegeId)?.name}`
+                ? `Students in ${data?.colleges.find(c => c.id === selectedCollegeId)?.name}`
                 : 'All Students';
     } else if (isDepartmentHead) {
         title = selectedProgram
             ? `Students in ${selectedProgram.name}`
-            : `Students in ${data.colleges.find(c => c.id === currentUser?.collegeId)?.name}`;
+            : `Students in ${data?.colleges.find(c => c.id === currentUser?.collegeId)?.name}`;
     }
 
     let subtitle = `Manage students for the ${selectedProgram?.name} program.`;
@@ -106,11 +89,11 @@ const StudentsList: React.FC = () => {
     }
       
     return {
-      filteredStudents: students.sort((a, b) => a.name.localeCompare(b.name)),
+      filteredStudents: filtered.sort((a, b) => a.name.localeCompare(b.name)),
       pageTitle: title,
       subTitle: subtitle
     }
-  }, [data, selectedProgram, selectedBatch, currentUser, selectedCollegeId, searchTerm, isAdmin, isDepartmentHead]);
+  }, [students, searchTerm, isAdmin, isDepartmentHead, selectedProgram, selectedCollegeId, data?.colleges, currentUser?.collegeId]);
   
   const canAddStudents = canManage && (isProgramCoordinator || (isAdmin && selectedProgram) || (isDepartmentHead && selectedProgram));
 

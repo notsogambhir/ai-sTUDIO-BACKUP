@@ -21,10 +21,18 @@ const ManageCourseOutcomes: React.FC = () => {
 
   useEffect(() => {
     if (!courseId) return;
-    const outcomesForCourse = data?.courseOutcomes.filter(co => co.courseId === courseId) || [];
-    setDraftOutcomes(outcomesForCourse);
-    setInitialOutcomes(outcomesForCourse);
-  }, [data?.courseOutcomes, courseId]);
+    const fetchOutcomes = async () => {
+      try {
+        const response = await apiClient.get(`/course-outcomes/?course_id=${courseId}`);
+        setDraftOutcomes(response.data);
+        setInitialOutcomes(response.data);
+      } catch (error) {
+        console.error('Failed to fetch course outcomes:', error);
+      }
+    };
+
+    fetchOutcomes();
+  }, [courseId]);
 
   const isDirty = useMemo(() => JSON.stringify(draftOutcomes) !== JSON.stringify(initialOutcomes), [draftOutcomes, initialOutcomes]);
 

@@ -16,7 +16,7 @@ class UserViewSetTests(APITestCase):
         Ensure we can create a new user.
         """
         url = reverse('user-list')
-        data = {'username': 'newuser', 'password': 'password', 'role': 'Teacher', 'employee_id': '12345'}
+        data = {'username': 'newuser', 'password': 'password', 'role': 'Teacher', 'employee_id': '12345', 'name': 'New User'}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(User.objects.count(), 3)
@@ -26,9 +26,14 @@ class UserViewSetTests(APITestCase):
         """
         Ensure we can list users.
         """
+        # Verify the properties of the admin user created in setUp
+        self.assertTrue(self.admin_user.is_superuser)
+        self.assertEqual(self.admin_user.role, 'Admin')
+
         url = reverse('user-list')
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # The response should contain both the admin and the teacher user
         self.assertEqual(len(response.data), 2)
 
 class CollegeViewSetTests(APITestCase):

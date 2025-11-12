@@ -17,17 +17,33 @@ const CoPoMappingMatrix: React.FC = () => {
   
   const canManage = currentUser?.role === 'Teacher' || currentUser?.role === 'Program Co-ordinator';
 
-  const { courseOutcomes, programOutcomes, initialMapArray } = useMemo(() => {
-    const course = data?.courses.find(c => c.id === courseId);
-    return {
-      courseOutcomes: data?.courseOutcomes.filter(co => co.courseId === courseId) || [],
-      programOutcomes: data?.programOutcomes.filter(po => po.programId === course?.programId) || [],
-      initialMapArray: data?.coPoMapping.filter(m => m.courseId === courseId) || [],
-    };
-  }, [courseId, data]);
+  const [courseOutcomes, setCourseOutcomes] = useState([]);
+  const [programOutcomes, setProgramOutcomes] = useState([]);
+  const [initialMapArray, setInitialMapArray] = useState([]);
   
   const [draftMapping, setDraftMapping] = useState<CoPoMap>({});
   const [initialMapping, setInitialMapping] = useState<CoPoMap>({});
+
+  useEffect(() => {
+    if (!courseId) return;
+
+    const fetchData = async () => {
+      try {
+        const [coRes, poRes, mapRes] = await Promise.all([
+          apiClient.get(`/course-outcomes/?course_id=${courseId}`),
+          apiClient.get(`/program-outcomes/?course_id=${courseId}`),
+          apiClient.get(`/co-po-mapping/?course_id=${courseId}`),
+        ]);
+        setCourseOutcomes(coRes.data);
+        setProgramOutcomes(poRes.data);
+        setInitialMapArray(mapRes.data);
+      } catch (error) {
+        console.error('Failed to fetch mapping data:', error);
+      }
+    };
+
+    fetchData();
+  }, [courseId]);
 
   useEffect(() => {
     const map: CoPoMap = {};

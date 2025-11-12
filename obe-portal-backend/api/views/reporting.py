@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from ..models import Program, Course
 from ..serializers import ProgramSerializer, CourseSerializer
+from .attainment import ProgramAttainmentView, CourseAttainmentView
 
 class ProgramReportView(views.APIView):
     permission_classes = [IsAuthenticated]
@@ -14,7 +15,6 @@ class ProgramReportView(views.APIView):
         except Program.DoesNotExist:
             return Response({"error": "Program not found"}, status=404)
 
-        # TODO: Implement the report generation logic here.
         po_attainment_view = ProgramAttainmentView()
         po_attainment_data = po_attainment_view.get(request, *args, **kwargs).data
 
@@ -35,7 +35,6 @@ class CourseReportView(views.APIView):
         except Course.DoesNotExist:
             return Response({"error": "Course not found"}, status=404)
 
-        # TODO: Implement the report generation logic here.
         co_attainment_view = CourseAttainmentView()
         co_attainment_data = co_attainment_view.get(request, *args, **kwargs).data
 

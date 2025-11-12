@@ -14,7 +14,6 @@ class ProgramAttainmentView(views.APIView):
         except Program.DoesNotExist:
             return Response({"error": "Program not found"}, status=404)
 
-        # TODO: Implement the attainment calculation logic here.
         courses = Course.objects.filter(program=program)
         po_attainment = {}
 
@@ -68,7 +67,6 @@ class CourseAttainmentView(views.APIView):
         except Course.DoesNotExist:
             return Response({"error": "Course not found"}, status=404)
 
-        # TODO: Implement the attainment calculation logic here.
         co_attainment = self.calculate_co_attainment(course)
 
         return Response({
@@ -106,7 +104,6 @@ class StudentAttainmentView(views.APIView):
         except Student.DoesNotExist:
             return Response({"error": "Student not found"}, status=404)
 
-        # TODO: Implement the attainment calculation logic here.
         enrollments = student.enrollment_set.all()
         co_attainment = {}
 
