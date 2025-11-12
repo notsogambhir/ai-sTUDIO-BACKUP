@@ -6,7 +6,17 @@
 
 This is a comprehensive web application designed for educational institutions to manage, track, and calculate learning outcomes in accordance with the National Board of Accreditation (NBA) guidelines.
 
-## Run Locally
+## Quick Setup for Windows
+
+For Windows users, a setup script is provided to automate the installation process.
+
+1.  **Run the script:** Double-click the `setup_windows.bat` file.
+2.  **Follow the on-screen instructions:** The script will pause at two manual steps:
+    *   **Database Creation:** You will be given the exact SQL commands to run in your PostgreSQL client.
+    *   **Database Seeding:** You will be given the exact `psql` command to run to populate the database.
+3.  The script will handle the rest, including dependency installation, environment setup, and launching the servers.
+
+## Manual Setup
 
 ### Prerequisites
 
