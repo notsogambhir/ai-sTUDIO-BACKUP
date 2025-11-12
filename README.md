@@ -16,6 +16,17 @@ For Windows users, a setup script is provided to automate the installation proce
     *   **Database Seeding:** You will be given the exact `psql` command to run to populate the database.
 3.  The script will handle the rest, including dependency installation, environment setup, and launching the servers.
 
+## Starting the Application (After Setup)
+
+Once you have completed the initial setup (either via the script or manually), you can easily start the application for daily development:
+
+-   **On Windows:** Double-click the `start_windows.bat` script.
+-   **Manually:** Open two separate terminals and run the following commands:
+    1.  **Backend:** `cd obe-portal-backend && source venv/bin/activate && python manage.py runserver`
+    2.  **Frontend:** `npm run dev`
+
+The application will be available at `http://localhost:3000`.
+
 ## Manual Setup
 
 ### Prerequisites
