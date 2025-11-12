@@ -59,20 +59,23 @@ const AdminUserManagementTab: React.FC = () => {
   };
 
   const getAssignmentInfo = (user: User): string => {
-      if (!data) return 'N/A';
-      switch (user.role) {
-          case 'Department':
-              return data.colleges.find(c => c.id === user.collegeId)?.name || 'N/A';
-          case 'Program Co-ordinator':
-              const deptHead = data.users.find(u => u.id === user.departmentId);
-              return deptHead ? `Dept: ${deptHead.name}` : 'N/A';
-          case 'Teacher':
-              const pcNames = user.programCoordinatorIds?.map(pcId => data.users.find(u => u.id === pcId)?.name).filter(Boolean).join(', ');
-              return pcNames || 'N/A';
-          default: 
-              return 'N/A';
-      }
-  };
+    if (!data) return 'N/A';
+    switch (user.role) {
+        case 'Department':
+            return data.colleges.find(c => c.id === user.collegeId)?.name || 'N/A';
+        case 'Program Co-ordinator':
+            const program = data.programs.find(p => p.id === user.programId);
+            return program?.name || 'N/A';
+        case 'Teacher':
+            const pcNames = user.programCoordinatorIds
+                ?.map(pcId => data.users.find(u => u.id === pcId)?.name)
+                .filter(Boolean)
+                .join(', ');
+            return pcNames || 'N/A';
+        default:
+            return 'N/A';
+    }
+};
 
 
   return (

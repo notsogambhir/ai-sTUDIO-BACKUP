@@ -1,23 +1,75 @@
-from rest_framework import viewsets, views
+from rest_framework import viewsets, views, status
 from rest_framework.response import Response
+from rest_framework.decorators import action
+from django.contrib.auth.hashers import make_password
+from rest_framework.permissions import IsAuthenticated
+
 from ..models import User, Student, Enrollment, College, Program, Course, Batch, Section, CourseOutcome, ProgramOutcome, CoPoMapping, Assessment, Mark, SystemSettings
 from ..serializers import UserSerializer, StudentSerializer, EnrollmentSerializer, CollegeSerializer, ProgramSerializer, CourseSerializer, BatchSerializer, SectionSerializer, CourseOutcomeSerializer, ProgramOutcomeSerializer, CoPoMappingSerializer, AssessmentSerializer, MarkSerializer, SystemSettingsSerializer
 from ..permissions import IsAdminUser, IsDepartmentHead, IsProgramCoordinator
 
 class UserViewSet(viewsets.ModelViewSet):
+    """
+    Provides full CRUD functionality for User accounts.
+    - Admin: Can perform all operations on any user.
+    - Department Head: Can view and manage users within their college (PCs, Teachers).
+    - Program Co-ordinator: Can view and manage teachers assigned to them.
+    """
     serializer_class = UserSerializer
-    permission_classes = [IsAdminUser]
+
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        - Admin has full access.
+        - Other authenticated users have read-only access to lists/details.
+        """
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            self.permission_classes = [IsAdminUser]
+        else:
+            self.permission_classes = [IsAuthenticated]
+        return super().get_permissions()
 
     def get_queryset(self):
+        """
+        Filters the queryset based on the role of the requesting user.
+        """
         user = self.request.user
-        queryset = User.objects.all()
+        queryset = User.objects.all().order_by('name')
 
-        if user.role == 'Department':
-            queryset = queryset.filter(college=user.college)
-        elif user.role == 'Program Co-ordinator':
-            queryset = queryset.filter(program=user.program)
+        if user.role == 'Admin':
+            return queryset
 
-        return queryset
+        # Department Head sees all users in their college
+        if user.role == 'Department' and user.college:
+            return queryset.filter(college=user.college)
+
+        # Program Co-ordinator sees teachers assigned to their program
+        if user.role == 'Program Co-ordinator' and user.program:
+            return queryset.filter(program_coordinator_ids__contains=[user.id])
+
+        # A teacher should only see their own profile, handled by detail view
+        if user.role == 'Teacher':
+            return queryset.filter(id=user.id)
+
+        # Fallback for other roles or incomplete data, return empty
+        return queryset.none()
+
+    def perform_create(self, serializer):
+        """
+        Hashes the password before saving a new user.
+        """
+        password = make_password(serializer.validated_data['password'])
+        serializer.save(password=password)
+
+    def perform_update(self, serializer):
+        """
+        Hashes the password if it is being updated.
+        """
+        if 'password' in serializer.validated_data:
+            password = make_password(serializer.validated_data['password'])
+            serializer.save(password=password)
+        else:
+            serializer.save()
 
 class StudentViewSet(viewsets.ModelViewSet):
     serializer_class = StudentSerializer

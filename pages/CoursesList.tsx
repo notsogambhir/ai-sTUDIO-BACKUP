@@ -226,7 +226,47 @@ const CoursesList: React.FC = () => {
     };
 
     const renderCourseTable = (courses: Course[]) => {
-        // ... (table rendering logic remains the same)
+        return (
+            <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                    <tr>
+                        {canManageCourses && <th className="px-6 py-3 w-12"><input type="checkbox" onChange={() => handleToggleSelectAll(courses.map(c => c.id))} checked={courses.length > 0 && courses.every(c => selectedCourseIds.includes(c.id))} /></th>}
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
+                        {canManageCourses && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned Teacher</th>}
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                    {courses.map(course => (
+                        <tr key={course.id} className={selectedCourseIds.includes(course.id) ? 'bg-blue-50' : ''}>
+                            {canManageCourses && <td className="px-6 py-4"><input type="checkbox" checked={selectedCourseIds.includes(course.id)} onChange={() => handleToggleSelection(course.id)} /></td>}
+                            <td className="px-6 py-4 whitespace-nowrap cursor-pointer" onClick={() => navigate(`/courses/${course.id}`)}>
+                                <div className="text-sm font-medium text-gray-900">{course.name}</div>
+                                <div className="text-sm text-gray-500">{course.code}</div>
+                            </td>
+                            {canManageCourses && (
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <select
+                                        value={course.teacherId || ''}
+                                        onChange={(e) => handleAssignTeacherChange(course.id, e.target.value)}
+                                        className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                                        disabled={!isProgramCoordinator && !isAdmin}
+                                    >
+                                        <option value="">-- Unassigned --</option>
+                                        {teachersForPC.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                                    </select>
+                                </td>
+                            )}
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                {course.status === 'Future' && <button onClick={() => promptStatusChange([course.id], 'Active')} className="text-blue-600 hover:text-blue-900">Activate</button>}
+                                {course.status === 'Active' && <button onClick={() => promptStatusChange([course.id], 'Completed')} className="text-green-600 hover:text-green-900">Complete</button>}
+                                {course.status === 'Completed' && <button onClick={() => promptStatusChange([course.id], 'Active')} className="text-gray-600 hover:text-gray-900">Re-activate</button>}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        );
     };
 
     if (currentUser?.role === 'Teacher') {
