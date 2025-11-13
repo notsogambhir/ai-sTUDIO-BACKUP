@@ -58,12 +58,11 @@ The application will be available at `http://localhost:3000`.
    - Create a new user named `obe_user` with the password `obe_password`.
    - Grant all privileges on the `obe_portal_db` database to the `obe_user`.
 
-5. **Set the environment variables:**
-   - Create a `.env` file in the `obe-portal-backend` directory.
-   - Add the following environment variables to the `.env` file:
+5. **Create the environment file:**
+   - Create a file named `.env` in the `obe-portal-backend` directory.
+   - Add the following content to the file. This file provides the database credentials to the Django application.
      ```
      SECRET_KEY=your_secret_key_for_development_only_change_in_production
-     DJANGO_SETTINGS_MODULE=obe_portal.settings
      DB_NAME=obe_portal_db
      DB_USER=obe_user
      DB_PASSWORD=obe_password
