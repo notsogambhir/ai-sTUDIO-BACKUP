@@ -6,7 +6,28 @@
 
 This is a comprehensive web application designed for educational institutions to manage, track, and calculate learning outcomes in accordance with the National Board of Accreditation (NBA) guidelines.
 
-## Run Locally
+## Quick Setup for Windows
+
+For Windows users, a setup script is provided to automate the installation process.
+
+1.  **Run the script:** Double-click the `setup_windows.bat` file.
+2.  **Follow the on-screen instructions:** The script will pause at two manual steps:
+    *   **Database Creation:** You will be given the exact SQL commands to run in your PostgreSQL client.
+    *   **Database Seeding:** You will be given the exact `psql` command to run to populate the database.
+3.  The script will handle the rest, including dependency installation, environment setup, and launching the servers.
+
+## Starting the Application (After Setup)
+
+Once you have completed the initial setup (either via the script or manually), you can easily start the application for daily development:
+
+-   **On Windows:** Double-click the `start_windows.bat` script.
+-   **Manually:** Open two separate terminals and run the following commands:
+    1.  **Backend:** `cd obe-portal-backend && source venv/bin/activate && python manage.py runserver`
+    2.  **Frontend:** `npm run dev`
+
+The application will be available at `http://localhost:3000`.
+
+## Manual Setup
 
 ### Prerequisites
 
@@ -37,12 +58,11 @@ This is a comprehensive web application designed for educational institutions to
    - Create a new user named `obe_user` with the password `obe_password`.
    - Grant all privileges on the `obe_portal_db` database to the `obe_user`.
 
-5. **Set the environment variables:**
-   - Create a `.env` file in the `obe-portal-backend` directory.
-   - Add the following environment variables to the `.env` file:
+5. **Create the environment file:**
+   - Create a file named `.env` in the `obe-portal-backend` directory.
+   - Add the following content to the file. This file provides the database credentials to the Django application.
      ```
      SECRET_KEY=your_secret_key_for_development_only_change_in_production
-     DJANGO_SETTINGS_MODULE=obe_portal.settings
      DB_NAME=obe_portal_db
      DB_USER=obe_user
      DB_PASSWORD=obe_password
